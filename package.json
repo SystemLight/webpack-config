@@ -1,0 +1,60 @@
+{
+  "name": "@systemlight/webpack-config",
+  "version": "1.0.0",
+  "description": "Webpack common configuration.",
+  "main": "src/index.js",
+  "scripts": {},
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "webpack",
+    "config"
+  ],
+  "license": "MIT",
+  "author": "SystemLighht",
+  "homepage": "https://github.com/SystemLight/webpack-config#readme",
+  "bugs": {
+    "url": "https://github.com/SystemLight/webpack-config/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SystemLight/webpack-config"
+  },
+  "engines": {
+    "node": ">=12.18.3"
+  },
+  "dependencies": {
+    "webpack-chain": "^6.5.1",
+    "webpack-merge": "^5.8.0",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^3.11.2",
+    "webpackbar": "^5.0.0-3",
+    "ts-loader": "^8.0.17",
+    "url-loader": "^4.1.1",
+    "postcss": "^8.2.6",
+    "postcss-loader": "^4.3.0",
+    "postcss-preset-env": "^6.7.0",
+    "react-dev-utils": "^11.0.4",
+    "style-loader": "^2.0.0",
+    "terser-webpack-plugin": "^4.2.3",
+    "thread-loader": "^3.0.1",
+    "mini-css-extract-plugin": "^1.3.9",
+    "mockjs": "^1.1.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.4",
+    "less": "^4.1.2",
+    "less-loader": "^7.3.0",
+    "file-loader": "^6.2.0",
+    "friendly-errors-webpack-plugin": "^1.7.0",
+    "html-webpack-plugin": "^4.5.2",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.4.1",
+    "css-loader": "^5.1.0",
+    "babel-loader": "^8.2.2",
+    "body-parser": "^1.19.0",
+    "chalk": "^4.1.2",
+    "chokidar": "^3.5.2",
+    "@svgr/webpack": "^5.5.0"
+  }
+}

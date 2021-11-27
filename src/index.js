@@ -44,8 +44,10 @@ function configBasicStyle(styleType) {
                 .end();
             break;
         case 'scss':
+            // TODO: scss
             break;
         case 'stylus':
+            // TODO: stylus
             break;
     }
 }
@@ -66,18 +68,72 @@ function configExtraStyle(isProduction, styleType) {
     }
 }
 
-function assertProjectType(rootDir) {
-    const {devDependencies, dependencies} = require(path.join(rootDir, 'package.json'));
-    const allLibKey = Object.keys(Object.assign(devDependencies, dependencies, {}));
+function getSplitChunksGroup(allLibKey) {
+    let splitChunksGroup = {
+        common: {
+            name: 'common',
+            chunks: 'all',
+            priority: -20,
+            minChunks: 2,
+            reuseExistingChunk: true
+        },
+        vendors: {
+            name: 'vendors',
+            test: /[\\/]node_modules[\\/]/,
+            chunks: 'all',
+            priority: -10
+        },
+        styles: {
+            name: 'styles',
+            test: /\.css$/,
+            chunks: 'all',
+            enforce: true
+        }
+    };
 
     if (allLibKey.includes('vue')) {
-        return 'vue';
-    }
-    if (allLibKey.includes('react')) {
-        return 'react';
+        splitChunksGroup = Object.assign(splitChunksGroup, {
+            vue: {
+                name: 'vue',
+                test: /[\\/]node_modules[\\/](vue|vue-router|vuex)/,
+                chunks: 'all',
+                enforce: true
+            }
+        });
     }
 
-    return 'unknown';
+    if (allLibKey.includes('element-ui')) {
+        splitChunksGroup = Object.assign(splitChunksGroup, {
+            elementUI: {
+                name: 'element-ui',
+                test: /[\\/]node_modules[\\/](element-ui)/,
+                chunks: 'all'
+            }
+        });
+    }
+
+    if (allLibKey.includes('react')) {
+        splitChunksGroup = Object.assign(splitChunksGroup, {
+            react: {
+                name: 'react',
+                test: /[\\/]node_modules[\\/](scheduler|react|react-dom|prop-types)/,
+                chunks: 'all',
+                enforce: true
+            }
+        });
+    }
+
+    if (allLibKey.includes('antd')) {
+        splitChunksGroup = Object.assign(splitChunksGroup, {
+            antd: {
+                name: 'antd',
+                test: /[\\/]node_modules[\\/](@ant-design|antd)/,
+                chunks: 'all'
+            }
+        });
+    }
+
+    return splitChunksGroup;
 }
 
 module.exports = function (env, argv) {
@@ -86,10 +142,15 @@ module.exports = function (env, argv) {
     const workDir = process.cwd();
     const targetDistPath = path.resolve(workDir, 'dist');
     const publicPath = '/';
-    const projectType = assertProjectType(workDir);
     const webpackDevClientEntry = require.resolve('react-dev-utils/webpackHotDevClient');
+    const {devDependencies, dependencies} = require(path.join(workDir, 'package.json'));
+    const allLibKey = Object.keys(Object.assign(devDependencies, dependencies, {}));
     const isTsProject = fs.existsSync(path.join(workDir, 'tsconfig.json'));
     const isMock = fs.existsSync(path.join(workDir, 'mocks'));
+    const scriptExt = isTsProject ? 'ts' : 'js';
+    const entryDefaultName = 'main.' + scriptExt;
+    const haveTemplate = fs.existsSync(path.join(workDir, 'template.ejs'));
+    const havePublic = fs.existsSync(path.join(workDir, 'public'));
 
     config
         .mode(mode)
@@ -129,6 +190,7 @@ module.exports = function (env, argv) {
         .hotOnly(false)
         .port(8080)
         .proxy({
+            // https://github.com/chimurai/http-proxy-middleware
             '/proxy': {
                 target: 'http://127.0.0.1:5000',
                 pathRewrite: {'^/proxy': ''},
@@ -145,56 +207,12 @@ module.exports = function (env, argv) {
             }
         });
 
-    let splitChunksGroup = {
-        common: {
-            name: 'common',
-            chunks: 'all',
-            priority: -20,
-            minChunks: 2,
-            reuseExistingChunk: true
-        },
-        vendors: {
-            name: 'vendors',
-            test: /[\\/]node_modules[\\/]/,
-            chunks: 'all',
-            priority: -10
-        },
-        styles: {
-            name: 'styles',
-            test: /\.css$/,
-            chunks: 'all',
-            enforce: true
-        }
-    };
-
-    const splitChunksReactGroup = {
-        react: {
-            name: 'react',
-            test: /[\\/]node_modules[\\/](scheduler|react|react-dom|prop-types)/,
-            chunks: 'all',
-            enforce: true
-        },
-        antd: {
-            name: 'antd',
-            test: /[\\/]node_modules[\\/](@ant-design|antd)/,
-            chunks: 'all'
-        }
-    }
-
-    switch (projectType) {
-        case 'react':
-            splitChunksGroup = Object.assign(splitChunksGroup, splitChunksReactGroup);
-            break;
-        case 'vue':
-            break;
-    }
-
     config.optimization
         .runtimeChunk('single')
         .splitChunks({
             chunks: 'async',
             automaticNameDelimiter: '-',
-            cacheGroups: splitChunksGroup
+            cacheGroups: getSplitChunksGroup(allLibKey)
         })
         .minimize(isProduction)
         .minimizer('TerserJSPlugin')
@@ -264,7 +282,7 @@ module.exports = function (env, argv) {
         svgConfig.set('issuer', /\.tsx?$/);
     }
 
-    if (projectType === 'react') {
+    if (allLibKey.includes('react')) {
         svgConfig
             .use('babel-loader')
             .loader('babel-loader')
@@ -331,28 +349,30 @@ module.exports = function (env, argv) {
         .use(CleanWebpackPlugin)
         .end();
 
-    config.plugin('CopyWebpackPlugin')
-        .use(CopyWebpackPlugin, [
-            {
-                patterns: [
-                    {
-                        from: path.join(workDir, '/public'),
-                        to: targetDistPath,
-                        globOptions: {
-                            ignore: ['.*']
+    if (havePublic) {
+        config.plugin('CopyWebpackPlugin')
+            .use(CopyWebpackPlugin, [
+                {
+                    patterns: [
+                        {
+                            from: path.join(workDir, '/public'),
+                            to: targetDistPath,
+                            globOptions: {
+                                ignore: ['.*']
+                            }
                         }
-                    }
-                ]
-            }
-        ])
-        .end();
+                    ]
+                }
+            ])
+            .end();
+    }
 
     config.plugin('HtmlWebpackPlugin')
         .use(HtmlWebpackPlugin, [
             {
                 hash: false,
                 filename: 'index.html',
-                template: './template.ejs',
+                template: haveTemplate ? './template.ejs' : path.resolve(__dirname, 'src/template.ejs'),
                 inject: true,
                 minify: isProduction ? {
                     removeComments: true,
@@ -366,7 +386,7 @@ module.exports = function (env, argv) {
     config.when(
         isProduction,
         (conf) => {
-            conf.entry('main').add('./src/main.ts');
+            conf.entry('main').add('./src/' + entryDefaultName);
             conf.output.filename('js/[name].[chunkhash:8].js');
             configExtraStyle(true, 'css');
             configExtraStyle(true, 'less');
@@ -390,7 +410,7 @@ module.exports = function (env, argv) {
                 .end();
         },
         (conf) => {
-            conf.entry('main').add(webpackDevClientEntry).add('./src/main.ts');
+            conf.entry('main').add(webpackDevClientEntry).add('./src/' + entryDefaultName);
             conf.output.filename('js/[name].[fullhash:8].js');
             configExtraStyle(false, 'css');
             configExtraStyle(false, 'less');

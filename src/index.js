@@ -238,7 +238,7 @@ module.exports = function (env, argv) {
         .use('thread-loader')
         .loader('thread-loader')
         .end()
-        .use('babel-loader')
+        .use('babel-loader') // https://github.com/babel/babel-loader
         .loader('babel-loader')
         .end();
 
@@ -372,7 +372,7 @@ module.exports = function (env, argv) {
             {
                 hash: false,
                 filename: 'index.html',
-                template: haveTemplate ? './template.ejs' : path.resolve(__dirname, 'src/template.ejs'),
+                template: haveTemplate ? './template.ejs' : path.resolve(__dirname, 'template.ejs'),
                 inject: true,
                 minify: isProduction ? {
                     removeComments: true,

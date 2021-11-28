@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Webpack common configuration.",
   "main": "src/index.js",
   "scripts": {},

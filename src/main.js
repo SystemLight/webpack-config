@@ -3,57 +3,58 @@ const fs = require('fs')
 
 /**
  * @typedef Webpack5RecommendConfigOptions
- * @property {String?} cwd
- * @property {String?} srcPath
- * @property {String?} distPath
- * @property {Object?} packageJSON
- * @property {String?} staticFolderPath
- * @property {Boolean?} isTsProject
- * @property {Boolean?} isEntryJSX
- * @property {String?} scriptExt
- * @property {String?} entryDefaultName
- * @property {String | null?} entryDefaultFileName
- * @property {Boolean?} enableProfile
- * @property {Boolean?} enableProxy
- * @property {Boolean?} enableMock
- * @property {Boolean?} enableThread
- * @property {Boolean?} enableHash
- * @property {Boolean?} enableSplitChunk
- * @property {Boolean?} enableBabel
- * @property {Boolean?} enableMinimize
- * @property {Boolean?} enableResolveCss
- * @property {Boolean?} enableResolveAsset
- * @property {Boolean?} enableBuildNodeLibrary
- * @property {Boolean?} emitHtml
- * @property {Boolean?} emitCss
- * @property {Boolean?} emitPublic
- * @property {String | null?} title
- * @property {String?} publicPath
- * @property {Boolean | 'auto'?} libraryName
- * @property {String[]?} externals
- * @property {Boolean?} skipCheckBabel
- * @property {MockServerMiddleware?} mockServer
+ * @property {String?} cwd - 当前运行webpack所在位置
+ * @property {String?} srcPath - 源码目录文件位置
+ * @property {String?} distPath - 输出文件位置
+ * @property {Object?} packageJSON - package.json文件信息对象
+ * @property {String?} staticFolderPath - 静态文件public目录
+ * @property {Boolean?} isTsProject - 是否为TS项目
+ * @property {Boolean?} isEntryJSX - 定义入口文件是否是JSX或者TSX
+ * @property {String?} scriptExt - 入口脚本扩展名称
+ * @property {String?} entryDefaultName - 入口默认名,webpack默认入口为index.js，输出为main.js
+ * @property {String | null?} entryDefaultFileName - 入口文件默认名称
+ * @property {Boolean?} enableProfile - 是否统计并打印webpack打包详细信息
+ * @property {Boolean?} enableProxy - 是否启用代理配置
+ * @property {Boolean?} enableMock - 是否mock数据代理配置
+ * @property {Boolean?} enableThread - 是否启用多线程
+ * @property {Boolean?} enableHash - 是否启用HASH
+ * @property {Boolean?} enableSplitChunk - 是否启用代码Chunk切分
+ * @property {Boolean?} enableBabel - 默认生产环境进行babel编译，如果你使用React JSX那么需要永久启用并添加@babel/preset-react
+ * @property {Boolean?} enableMinimize - 是否开启压缩代码
+ * @property {Boolean?} enableResolveCss - 是否解析样式文件
+ * @property {Boolean?} enableResolveAsset - 是否解析资源文件
+ * @property {Boolean?} enableBuildNodeLibrary - 是否启用构建node库的环境配置
+ * @property {Boolean?} emitHtml - 是否弹出HTML文件
+ * @property {Boolean?} emitCss - 是否分离css
+ * @property {Boolean?} emitPublic - 是否复制public中静态文件
+ * @property {String | null?} title - 主页标题
+ * @property {String?} publicPath - 发布时URL访问路径
+ * @property {Boolean | 'auto'?} libraryName - 是否作为库函数进行发布
+ * @property {String[]?} externals - 需要做排除的库，目前支持react
+ * @property {Object?} define - 定义额外的一些字段内容，可以在项目中获取
+ * @property {Boolean?} skipCheckBabel - 强制跳过babel启用检查
+ * @property {MockServerMiddleware?} mockServer - mockServer中间件
  */
 
 /**
  * @callback BuildCallback
- * @param {Webpack5RecommendConfigOptions[]} options
+ * @param {Webpack5RecommendConfigOptions[]} options - 配置选项
  * @return {void}
  */
 
 /**
  * @callback MockServerMiddleware
- * @param {any} app
+ * @param {any} app - express实例
  * @return {void}
  */
 
 class Webpack5RecommendConfig {
   /**
    * webpack配置项：https://webpack.js.org/configuration/
-   * @param {any[]} env
-   * @param {Object} argv
+   * @param {any[]} env - webpack环境变量对象
+   * @param {Object} argv - 调用参数
    * @param {'development' | 'production'} argv.mode
-   * @param {Webpack5RecommendConfigOptions[] | Webpack5RecommendConfigOptions?} options
+   * @param {Webpack5RecommendConfigOptions[] | Webpack5RecommendConfigOptions?} options - 配置选项
    */
   constructor(env, argv, options) {
     this.mode = argv.mode || 'development'
@@ -63,40 +64,41 @@ class Webpack5RecommendConfig {
     const cwd = process.cwd()
     const isTsProject = fs.existsSync(path.join(cwd, 'tsconfig.json'))
     const _options = {
-      cwd: cwd, // 当前运行webpack所在位置
-      srcPath: path.resolve(cwd, 'src'), // 源码目录文件位置
-      distPath: path.resolve(cwd, 'dist'),// 输出文件位置
-      packageJSON: require(path.join(cwd, 'package.json')), // package.json文件信息对象
-      staticFolderPath: path.join(cwd, 'public'), // 静态文件public目录
+      cwd: cwd,
+      srcPath: path.resolve(cwd, 'src'),
+      distPath: path.resolve(cwd, 'dist'),
+      packageJSON: require(path.join(cwd, 'package.json')),
+      staticFolderPath: path.join(cwd, 'public'),
 
-      isTsProject: isTsProject, // 是否为ts项目
-      isEntryJSX: false, // 定义入口文件是否是JSX或者TSX
-      scriptExt: isTsProject ? '.ts' : '.js', // 入口脚本扩展名称
-      entryDefaultName: 'main', // 入口默认名,webpack默认入口为index.js，输出为main.js
-      entryDefaultFileName: null, // // 入口文件默认名称
+      isTsProject: isTsProject,
+      isEntryJSX: false,
+      scriptExt: isTsProject ? '.ts' : '.js',
+      entryDefaultName: 'main',
+      entryDefaultFileName: null,
 
-      enableProfile: false, // 是否统计并打印webpack打包详细信息
-      enableProxy: false, // 是否启用代理配置
-      enableMock: false, // 是否mock数据代理配置
-      enableThread: false, // 是否启用多线程
-      enableHash: true, // 是否启用HASH
-      enableSplitChunk: true, // 是否启用代码Chunk切分
-      enableBabel: this.isProduction, // 默认生产环境进行babel编译，如果你使用React JSX那么需要永久启用并添加@babel/preset-react
-      enableMinimize: this.isProduction, // 是否开启压缩代码
-      enableResolveCss: true, // 是否解析样式文件
-      enableResolveAsset: true, // 是否解析资源文件
-      enableBuildNodeLibrary: false, // 是否启用构建node库的环境配置
+      enableProfile: false,
+      enableProxy: false,
+      enableMock: false,
+      enableThread: false,
+      enableHash: true,
+      enableSplitChunk: true,
+      enableBabel: this.isProduction,
+      enableMinimize: this.isProduction,
+      enableResolveCss: true,
+      enableResolveAsset: true,
+      enableBuildNodeLibrary: false,
 
-      emitHtml: true, // 是否弹出HTML文件
-      emitCss: this.isProduction, // 是否分离css
-      emitPublic: true, // 是否复制public中静态文件
+      emitHtml: true,
+      emitCss: this.isProduction,
+      emitPublic: true,
 
-      title: null, // 主页标题
-      publicPath: '/', // 发布时URL访问路径
-      libraryName: false, // 是否作为库函数进行发布
-      externals: [], // 需要做排除的库，目前支持react
-      skipCheckBabel: false, // 强制跳过babel启用检查
-      mockServer: null // mockServer中间件
+      title: null,
+      publicPath: '/',
+      libraryName: false,
+      externals: [],
+      define: {},
+      skipCheckBabel: false,
+      mockServer: null
     }
 
     if (Array.isArray(options)) {
@@ -163,6 +165,7 @@ class Webpack5RecommendConfig {
       this.libraryName = this.camelCase(this.packageJSON['name']) || 'library'
     }
     this.externals = _options.externals
+    this.define = _options.define
     this.skipCheckBabel = _options.skipCheckBabel
     this.mockServer = _options.mockServer
 
@@ -553,6 +556,13 @@ class Webpack5RecommendConfig {
       })
     }
 
+    if (this.isInclude('vue')) {
+      this._config.module.rules.push({
+        test: /\.vue$/,
+        use: ['vue-loader']
+      })
+    }
+
     if (this.enableResolveCss) {
       /**
        * 添加css解析
@@ -701,13 +711,13 @@ class Webpack5RecommendConfig {
      * 允许在编译时配置全局常量
      * https://webpack.js.org/plugins/define-plugin
      */
-    this._config.plugins.push(
-      new this._webpack.DefinePlugin({
-        webpack5RecommendConfigOptions: {
-          author: '"SystemLight"'
-        }
-      })
-    )
+    if (this.isInclude('vue')) {
+      this.define = Object.assign({
+        __VUE_OPTIONS_API__: false,
+        __VUE_PROD_DEVTOOLS__: false
+      }, this.define)
+    }
+    this._config.plugins.push(new this._webpack.DefinePlugin(this.define))
 
     /**
      * 在监视模式下忽略指定的文件
@@ -722,6 +732,11 @@ class Webpack5RecommendConfig {
           paths: ignorePaths
         })
       )
+    }
+
+    if (this.isInclude('vue')) {
+      const {VueLoaderPlugin} = this.require('vue-loader')
+      this._config.plugins.push(new VueLoaderPlugin())
     }
 
     return this
@@ -777,7 +792,27 @@ class Webpack5RecommendConfig {
       }
     }
 
-    if (this.dependencies.includes('vue')) {
+    if (this.isInclude('react')) {
+      Object.assign(cacheGroups, {
+        react: {
+          name: 'react',
+          test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)/,
+          chunks: 'all'
+        }
+      })
+    }
+
+    if (this.isInclude('antd')) {
+      cacheGroups = Object.assign(cacheGroups, {
+        antd: {
+          name: 'antd',
+          test: /[\\/]node_modules[\\/](@ant-design|antd)/,
+          chunks: 'all'
+        }
+      })
+    }
+
+    if (this.isInclude('vue')) {
       Object.assign(cacheGroups, {
         vue: {
           name: 'vue',
@@ -788,31 +823,11 @@ class Webpack5RecommendConfig {
       })
     }
 
-    if (this.dependencies.includes('element-ui')) {
+    if (this.isInclude('element-ui')) {
       Object.assign(cacheGroups, {
         elementUI: {
           name: 'element-ui',
           test: /[\\/]node_modules[\\/](element-ui)/,
-          chunks: 'all'
-        }
-      })
-    }
-
-    if (this.dependencies.includes('react')) {
-      Object.assign(cacheGroups, {
-        react: {
-          name: 'react',
-          test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)/,
-          chunks: 'all'
-        }
-      })
-    }
-
-    if (this.dependencies.includes('antd')) {
-      cacheGroups = Object.assign(cacheGroups, {
-        antd: {
-          name: 'antd',
-          test: /[\\/]node_modules[\\/](@ant-design|antd)/,
           chunks: 'all'
         }
       })

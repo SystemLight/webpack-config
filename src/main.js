@@ -51,6 +51,7 @@ const fs = require('fs')
 class Webpack5RecommendConfig {
   /**
    * webpack配置项：https://webpack.js.org/configuration/
+   * 为什么不用Dll：https://github.com/facebook/create-react-app/pull/2710#issuecomment-378523967
    * @param {any[]} env - webpack环境变量对象
    * @param {Object} argv - 调用参数
    * @param {'development' | 'production'} argv.mode

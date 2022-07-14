@@ -12,9 +12,8 @@
 - [x] less
 - [x] sass
 - [x] postcss
-- [x] react
-- [ ] vue2
-- [ ] vue3 
+- [x] react18
+- [x] vue3 
 
 ### Usage
 
@@ -46,7 +45,7 @@ in `package.json`
     "scripts": {
       "build:webpack": "webpack --mode production",
       "build:webpack-dev": "webpack --mode development",
-      "dev:serve": "webpack serve --mode development",
+      "dev:serve": "webpack serve --mode development"
     }
 }
 ```

@@ -1,15 +1,17 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "scripts": {
     "lint:prettier": "prettier src/ -w",
     "lint:eslint-check": "eslint src/ --ext .jsx,.js,ts,tsx",
-    "lint:eslint": "eslint src/ --ext .jsx,.js,ts,tsx --fix",
-    "build:babel": "babel src/ -d dist/ -s"
+    "lint:eslint": "eslint src/ --ext .jsx,.js,ts,tsx --fix"
   },
   "keywords": [
     "webpack",
-    "config"
+    "webpack5",
+    "simple config",
+    "config",
+    "configuration"
   ],
   "description": "Webpack common configuration.",
   "main": "src/main.js",
@@ -34,16 +36,13 @@
     "webpack": "^5.20.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.5",
     "@babel/eslint-parser": "^7.18.2",
-    "@babel/plugin-transform-runtime": "^7.18.5",
     "@babel/preset-env": "^7.18.2",
     "@commitlint/cli": "^17.0.2",
     "@commitlint/config-conventional": "^17.0.2",
+    "core-js": "^3.23.1",
     "eslint": "^8.17.0",
-    "prettier": "^2.7.0",
-    "@babel/runtime-corejs3": "^7.18.3",
-    "core-js": "^3.23.1"
+    "prettier": "^2.7.0"
   }
 }

@@ -311,6 +311,7 @@ class Webpack5RecommendConfig {
   buildBasic() {
     this._config.mode = this.mode
     this._config.stats = 'errors-only'
+    this._config.infrastructureLogging = {level: 'error'}
     this._config.devtool = this.isDevelopment ? 'eval-source-map' : false
     this._config.context = this.cwd
     if (this.isDevelopment) {

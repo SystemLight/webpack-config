@@ -108,7 +108,7 @@ in `package.json`
 
 - 为什么使用vue时候options API不起效果？
 
-> webpack5RecommendConfig保持现代化编程只支持vue3并且默认金庸optionsAPI，启用方法如下：
+> webpack5RecommendConfig保持现代化编程只支持vue3并且默认禁用optionsAPI，启用方法如下：
 
 ```javascript
 const WebpackConfig = require('@systemlight/webpack-config');
@@ -119,6 +119,8 @@ module.exports = (env, argv) => new WebpackConfig(env, argv, {
     }
 }).build().toConfig()
 ```
+
+---
 
 - 为什么安装webpack-config还要安装一堆插件？
 

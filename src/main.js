@@ -49,6 +49,10 @@ const fs = require('fs')
  */
 
 class Webpack5RecommendConfig {
+  // 如果你在开发一个库或多项目仓库 (monorepo)，请注意导入 CSS 是具有副作用的。
+  // 请确保在 package.json 中移除 "sideEffects": false，
+  // 否则 CSS 代码块会在生产环境构建时被 webpack 丢掉
+
   /**
    * webpack配置项：https://webpack.js.org/configuration/
    * 为什么不用Dll：https://github.com/facebook/create-react-app/pull/2710#issuecomment-378523967
@@ -542,6 +546,7 @@ class Webpack5RecommendConfig {
           // https://github.com/TypeStrong/ts-loader#happypackmode
           happyPackMode: this.enableThread,
           transpileOnly: true,
+          // appendTsSuffixTo: ['\\.vue$'],
           compilerOptions: {
             jsx: jsx,
             noEmit: true

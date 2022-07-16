@@ -103,3 +103,23 @@ in `package.json`
 - webpack5RecommendConfig.newLibrary(...) : 创建类库项目
 - webpack5RecommendConfig.newReactLibrary(...) : 创建react库项目
 - webpack5RecommendConfig.newNodeLibrary(...) : 创建node库项目
+
+### QA:
+
+- 为什么使用vue时候options API不起效果？
+
+> webpack5RecommendConfig保持现代化编程只支持vue3并且默认金庸optionsAPI，启用方法如下：
+
+```javascript
+const WebpackConfig = require('@systemlight/webpack-config');
+
+module.exports = (env, argv) => new WebpackConfig(env, argv, {
+    define: {
+        __VUE_OPTIONS_API__: true
+    }
+}).build().toConfig()
+```
+
+- 为什么安装webpack-config还要安装一堆插件？
+
+> webpack-config只是为了更方便智能的生成webpack配置，所以插件版本需要用户自己安装和配置，webpack-config会自动识别并生成配置

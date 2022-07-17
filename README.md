@@ -34,7 +34,7 @@ const webpack5RecommendConfig = require('@systemlight/webpack-config')
  * @property {String?} cwd - 当前运行webpack所在位置
  * @property {String?} srcPath - 源码目录文件位置
  * @property {String?} distPath - 输出文件位置
- * @property {Object?} packageJSON - package.json文件信息对象
+ * @property {Object?} packageJSONFilePath - package.json文件目录，绝对路径
  * @property {String?} staticFolderPath - 静态文件public目录
  * @property {Boolean?} isTsProject - 是否为TS项目
  * @property {Boolean?} isEntryJSX - 定义入口文件是否是JSX或者TSX
@@ -99,10 +99,17 @@ in `package.json`
 
 ### API
 
-- new webpack5RecommendConfig(...) : 创建默认web项目，自检vue或者react
-- webpack5RecommendConfig.newLibrary(...) : 创建类库项目
-- webpack5RecommendConfig.newReactLibrary(...) : 创建react库项目
-- webpack5RecommendConfig.newNodeLibrary(...) : 创建node库项目
+> 创建配置实例对象
+
+- new webpack5RecommendConfig(env,argv,options) : 创建默认web项目，自检vue或者react
+- webpack5RecommendConfig.newLibrary(env, argv, libraryName, buildCallback) : 创建类库项目
+- webpack5RecommendConfig.newReactLibrary(env, argv, libraryName, buildCallback) : 创建react库项目
+- webpack5RecommendConfig.newNodeLibrary(env, argv, buildCallback) : 创建node库项目
+
+> 实例对象方法
+
+- build(buildCallback) : 执行构建方法，该方法会执行多个分块构建，接收buildCallback回调可以对webpack配置对象进行细节修改
+- toConfig(debug) : 生成webpack配置对象并返回
 
 ### QA:
 
@@ -125,3 +132,31 @@ module.exports = (env, argv) => new WebpackConfig(env, argv, {
 - 为什么安装webpack-config还要安装一堆插件？
 
 > webpack-config只是为了更方便智能的生成webpack配置，所以插件版本需要用户自己安装和配置，webpack-config会自动识别并生成配置
+
+---
+
+- 如何配置mock服务？
+
+`mock/index.js`
+
+```javascript
+const mocks = [
+  // #auto-mock
+]
+
+module.exports = mocks
+```
+
+`webpack.config.js`
+
+```javascript
+const webpack5RecommendConfig = require('@systemlight/webpack-config')
+const {mockServer} = require('@systemlight/webpack-config-mockserver')
+
+module.exports = (env, argv) => new webpack5RecommendConfig(env, argv, {
+  enableMock: true,
+  mockServer: mockServer
+})
+  .build()
+  .toConfig()
+```

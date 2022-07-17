@@ -1,12 +1,13 @@
 const path = require('path')
 const fs = require('fs')
+const {createRequire} = require('module')
 
 /**
  * @typedef Webpack5RecommendConfigOptions
  * @property {String?} cwd - 当前运行webpack所在位置
  * @property {String?} srcPath - 源码目录文件位置
  * @property {String?} distPath - 输出文件位置
- * @property {Object?} packageJSON - package.json文件信息对象
+ * @property {Object?} packageJSONFilePath - package.json文件目录，绝对路径
  * @property {String?} staticFolderPath - 静态文件public目录
  * @property {Boolean?} isTsProject - 是否为TS项目
  * @property {Boolean?} isEntryJSX - 定义入口文件是否是JSX或者TSX
@@ -67,13 +68,13 @@ class Webpack5RecommendConfig {
     this.isDevelopment = !this.isProduction
 
     const cwd = process.cwd()
-    const isTsProject = fs.existsSync(path.join(cwd, 'tsconfig.json'))
+    const isTsProject = fs.existsSync(path.resolve(cwd, 'tsconfig.json'))
     const _options = {
       cwd: cwd,
       srcPath: path.resolve(cwd, 'src'),
       distPath: path.resolve(cwd, 'dist'),
-      packageJSON: require(path.join(cwd, 'package.json')),
-      staticFolderPath: path.join(cwd, 'public'),
+      packageJSONFilePath: path.resolve(cwd, 'package.json'),
+      staticFolderPath: path.resolve(cwd, 'public'),
 
       isTsProject: isTsProject,
       isEntryJSX: false,
@@ -128,10 +129,12 @@ class Webpack5RecommendConfig {
       Object.assign(_options, options)
     }
 
+    this.require = createRequire(_options.packageJSONFilePath)
     this.cwd = _options.cwd
     this.srcPath = _options.srcPath
     this.distPath = _options.distPath
-    this.packageJSON = _options.packageJSON
+    this.packageJSONFilePath = _options.packageJSONFilePath
+    this.packageJSON = require(_options.packageJSONFilePath)
     this.dependencies = Object.keys({ // 项目依赖库数组，用于判定包含什么框架
       ...this.packageJSON['devDependencies'],
       ...this.packageJSON['dependencies']
@@ -323,7 +326,7 @@ class Webpack5RecommendConfig {
 
   buildInsAndOuts() {
     this._config.entry = {
-      [this.entryDefaultName]: path.join(this.srcPath, this.entryDefaultFileName)
+      [this.entryDefaultName]: path.resolve(this.srcPath, this.entryDefaultFileName)
     }
 
     this._config.output = {
@@ -721,7 +724,7 @@ class Webpack5RecommendConfig {
     if (this.isInclude('vue')) {
       this.define = Object.assign({
         __VUE_OPTIONS_API__: false,
-        __VUE_PROD_DEVTOOLS__: false
+        __VUE_PROD_DEVTOOLS__: this.isDevelopment
       }, this.define)
     }
     this._config.plugins.push(new this._webpack.DefinePlugin(this.define))
@@ -766,10 +769,6 @@ class Webpack5RecommendConfig {
     if (this.isInclude('react') && !this.isInclude('@babel/preset-react')) {
       throw TypeError('Please add and configure @babel/preset-react in Babel to compile the react project.')
     }
-  }
-
-  require(id) {
-    return require(path.resolve(this.cwd, 'node_modules', id))
   }
 
   camelCase(content) {

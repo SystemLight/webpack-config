@@ -1,0 +1,49 @@
+{
+  "name": "@systemlight/webpack-config",
+  "version": "5.2.2",
+  "scripts": {
+    "lint:prettier": "prettier src/ -w",
+    "lint:eslint-check": "eslint src/ --ext .jsx,.js,ts,tsx",
+    "lint:eslint": "eslint src/ --ext .jsx,.js,ts,tsx --fix"
+  },
+  "keywords": [
+    "webpack",
+    "webpack5",
+    "simple config",
+    "config",
+    "configuration"
+  ],
+  "description": "Webpack common configuration.",
+  "main": "src/main.js",
+  "files": [
+    "src"
+  ],
+  "bin": {},
+  "author": "SystemLighht",
+  "license": "MIT",
+  "homepage": "https://github.com/SystemLight/webpack-config#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SystemLight/webpack-config"
+  },
+  "bugs": {
+    "url": "https://github.com/SystemLight/webpack-config/issues"
+  },
+  "engines": {
+    "node": ">=16.15.0"
+  },
+  "peerDependencies": {
+    "webpack": "^5.20.0",
+    "webpackbar": "^5.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.5",
+    "@babel/eslint-parser": "^7.18.2",
+    "@babel/preset-env": "^7.18.2",
+    "@commitlint/cli": "^17.0.2",
+    "@commitlint/config-conventional": "^17.0.2",
+    "core-js": "^3.23.1",
+    "eslint": "^8.17.0",
+    "prettier": "^2.7.0"
+  }
+}

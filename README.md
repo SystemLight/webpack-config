@@ -18,9 +18,9 @@
 ### Usage
 
 ```bash
-npm i @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar html-webpack-plugin -D
-yarn add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar html-webpack-plugin -D
-pnpm add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar html-webpack-plugin -D
+npm i @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
+yarn add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
+pnpm add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
 ```
 
 in `webpack.config.js`

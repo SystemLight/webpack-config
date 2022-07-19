@@ -66,6 +66,7 @@ class Webpack5RecommendConfig {
     this.mode = argv.mode || 'development'
     this.isProduction = this.mode === 'production'
     this.isDevelopment = !this.isProduction
+    this.isStartSever = !!env['WEBPACK_SERVE']
 
     const cwd = process.cwd()
     const isTsProject = fs.existsSync(path.resolve(cwd, 'tsconfig.json'))
@@ -715,6 +716,14 @@ class Webpack5RecommendConfig {
       )
     } else {
       this._config.plugins.push(new (this.require('webpackbar'))())
+    }
+
+    if (this.isStartSever) {
+      this._config.plugins.push(new (this.require('@soda/friendly-errors-webpack-plugin'))({
+        compilationSuccessInfo: {
+          messages: [`You application is running here http://localhost:${this._config.devServer.port}`]
+        }
+      }))
     }
 
     /**

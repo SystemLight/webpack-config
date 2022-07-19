@@ -1,5 +1,7 @@
 # @systemlight/webpack-config
 
+[![NPM version](https://img.shields.io/npm/v/@systemlight/webpack-config.svg)](https://www.npmjs.com/package/@systemlight/webpack-config)
+
 > Webpack common configuration.
 
 ### 支持环境
@@ -13,14 +15,14 @@
 - [x] sass
 - [x] postcss
 - [x] react18
-- [x] vue3 
+- [x] vue3
 
 ### Usage
 
 ```bash
-npm i @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar html-webpack-plugin -D
-yarn add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar html-webpack-plugin -D
-pnpm add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar html-webpack-plugin -D
+npm i @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
+yarn add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
+pnpm add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
 ```
 
 in `webpack.config.js`
@@ -75,7 +77,7 @@ const webpack5RecommendConfig = require('@systemlight/webpack-config')
  * @param {any} app - express实例
  * @return {void}
  */
- 
+
 module.exports = (env, argv) => new webpack5RecommendConfig(env, argv)
   .build(function (config) {
     if (this.isDevelopment) {
@@ -89,11 +91,11 @@ in `package.json`
 
 ```json
 {
-    "scripts": {
-      "build:webpack": "webpack --mode production",
-      "build:webpack-dev": "webpack --mode development",
-      "dev:serve": "webpack serve --mode development"
-    }
+  "scripts": {
+    "build:webpack": "webpack --mode production",
+    "build:webpack-dev": "webpack --mode development",
+    "dev:serve": "webpack serve --mode development"
+  }
 }
 ```
 
@@ -113,6 +115,10 @@ in `package.json`
 
 ### QA:
 
+- 如何关闭HTML文件弹出？
+
+默认会读取src/index.ejs文件作为模板，如果存在的话，想要关闭html文件弹出可以配置`emitHtml:false`
+
 - 为什么使用vue时候options API不起效果？
 
 > webpack5RecommendConfig保持现代化编程只支持vue3并且默认禁用optionsAPI，启用方法如下：
@@ -121,9 +127,9 @@ in `package.json`
 const WebpackConfig = require('@systemlight/webpack-config');
 
 module.exports = (env, argv) => new WebpackConfig(env, argv, {
-    define: {
-        __VUE_OPTIONS_API__: true
-    }
+  define: {
+    __VUE_OPTIONS_API__: true
+  }
 }).build().toConfig()
 ```
 

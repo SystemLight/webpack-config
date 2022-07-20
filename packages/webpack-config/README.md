@@ -59,7 +59,8 @@ const webpack5RecommendConfig = require('@systemlight/webpack-config')
  * @property {Boolean?} emitPublic - 是否复制public中静态文件
  * @property {String | null?} title - 主页标题
  * @property {String?} publicPath - 发布时URL访问路径
- * @property {Boolean | 'auto'?} libraryName - 是否作为库函数进行发布
+ * @property {Boolean | String?} libraryName - 是否作为库函数进行发布
+ * @property {Boolean | 'auto'?} postcss - 是否启用postcss解析样式
  * @property {String[]?} externals - 需要做排除的库，目前支持react
  * @property {Object?} define - 定义额外的一些字段内容，可以在项目中获取
  * @property {Boolean?} skipCheckBabel - 强制跳过babel启用检查

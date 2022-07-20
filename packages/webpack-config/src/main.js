@@ -30,11 +30,16 @@ const {createRequire} = require('module')
  * @property {Boolean?} emitPublic - 是否复制public中静态文件
  * @property {String | null?} title - 主页标题
  * @property {String?} publicPath - 发布时URL访问路径
- * @property {Boolean | 'auto'?} libraryName - 是否作为库函数进行发布
+ * @property {LibraryName?} libraryName - 是否作为库函数进行发布
+ * @property {Boolean | 'auto'?} postcss - 是否启用postcss解析样式
  * @property {String[]?} externals - 需要做排除的库，目前支持react
  * @property {Object?} define - 定义额外的一些字段内容，可以在项目中获取
  * @property {Boolean?} skipCheckBabel - 强制跳过babel启用检查
  * @property {MockServerMiddleware?} mockServer - mockServer中间件
+ */
+
+/**
+ * @typedef {Boolean |string[] | {amd?: string, commonjs?: string, root?: string | string[]}} LibraryName
  */
 
 /**
@@ -102,6 +107,7 @@ class Webpack5RecommendConfig {
       title: null,
       publicPath: '/',
       libraryName: false,
+      postcss: 'auto',
       externals: [],
       define: {},
       skipCheckBabel: false,
@@ -173,6 +179,7 @@ class Webpack5RecommendConfig {
     if (this.libraryName === true) {
       this.libraryName = this.camelCase(this.packageJSON['name']) || 'library'
     }
+    this.postcss = _options.postcss
     this.externals = _options.externals
     this.define = _options.define
     this.skipCheckBabel = _options.skipCheckBabel
@@ -194,7 +201,7 @@ class Webpack5RecommendConfig {
 
   /**
    * 获取库构建参数
-   * @param {Boolean | String?} libraryName
+   * @param {LibraryName?} libraryName
    * @param {BuildCallback?} buildCallback
    * @returns {Webpack5RecommendConfigOptions[]}
    */
@@ -233,7 +240,7 @@ class Webpack5RecommendConfig {
 
   /**
    * 获取React库构建参数
-   * @param {Boolean | String?} libraryName
+   * @param {LibraryName?} libraryName
    * @param {BuildCallback?} buildCallback
    * @return {Webpack5RecommendConfigOptions[]}
    */
@@ -249,7 +256,7 @@ class Webpack5RecommendConfig {
    * @param {any[]} env
    * @param {Object} argv
    * @param {'development' | 'production'} argv.mode
-   * @param {Boolean | String?} libraryName
+   * @param {LibraryName?} libraryName
    * @param {BuildCallback?} buildCallback
    * @return {Webpack5RecommendConfig}
    */
@@ -280,7 +287,7 @@ class Webpack5RecommendConfig {
    * @param {any[]} env
    * @param {Object} argv
    * @param {'development' | 'production'} argv.mode
-   * @param {Boolean | String?} libraryName
+   * @param {LibraryName?} libraryName
    * @param {BuildCallback?} buildCallback
    * @return {Webpack5RecommendConfig}
    */
@@ -353,13 +360,13 @@ class Webpack5RecommendConfig {
     }
 
     // https://webpack.js.org/configuration/output/#outputlibrary
-    if (this.libraryName) {
+    if (this.libraryName !== false) { // true会被转换成自动名称，到不了这里
       this._config.output.globalObject = 'this'
       this._config.output.library = {
-        name: this.libraryName,
+        name: this.libraryName, // 如果不想要名称可以设置null
         // https://webpack.js.org/configuration/output/#outputlibrarytype
         type: 'umd2',
-        export: 'default',
+        export: 'default', // 如果想导出空间中所有内容，delete config.output.library.export
         umdNamedDefine: true,
         auxiliaryComment: {
           root: 'Root Export',
@@ -862,7 +869,7 @@ class Webpack5RecommendConfig {
 
     cssRuleLoaders.push('css-loader')
 
-    if (this.isProduction && this.isInclude('postcss-loader')) {
+    if (this.postcss === true || this.postcss === 'auto' && this.isProduction && this.isInclude('postcss-loader')) {
       cssRuleLoaders.push('postcss-loader')
     }
 

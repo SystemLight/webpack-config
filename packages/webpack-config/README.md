@@ -28,7 +28,7 @@ pnpm add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webp
 in `webpack.config.js`
 
 ```js
-const webpack5RecommendConfig = require('@systemlight/webpack-config')
+const {webpack5RecommendConfig} = require('@systemlight/webpack-config')
 
 // Webpack5RecommendConfigOptions - 第三个参数options配置内容
 /**
@@ -88,6 +88,29 @@ module.exports = (env, argv) => new webpack5RecommendConfig(env, argv)
   .toConfig();
 ```
 
+工厂函数构建
+
+```javascript
+const {wcf} = require('@systemlight/webpack-config');
+const AgreedRoutingPlugin = require('./agreed-route-plugin');
+
+module.exports = wcf({
+    buildOptions: {
+        postcss: true,
+        emitCss: false,
+        enableBabel: false,
+        skipCheckBabel: true,
+        define: {
+            __VUE_OPTIONS_API__: true
+        }
+    },
+    buildConfigCallback(config) {
+        this.rebuildDexterity(false)
+        config.plugins.push(new AgreedRoutingPlugin())
+    }
+})
+```
+
 in `package.json`
 
 ```json
@@ -104,15 +127,16 @@ in `package.json`
 
 > 创建配置实例对象
 
-- new webpack5RecommendConfig(env,argv,options) : 创建默认web项目，自检vue或者react
-- webpack5RecommendConfig.newLibrary(env, argv, libraryName, buildCallback) : 创建类库项目
-- webpack5RecommendConfig.newReactLibrary(env, argv, libraryName, buildCallback) : 创建react库项目
-- webpack5RecommendConfig.newNodeLibrary(env, argv, buildCallback) : 创建node库项目
+- new Webpack5RecommendConfig(env,argv,options) : 创建默认web项目，自检vue或者react
+- Webpack5RecommendConfig.newLibrary(env, argv, libraryName, genCallback) : 创建类库项目
+- Webpack5RecommendConfig.newReactLibrary(env, argv, libraryName, genCallback) : 创建react库项目
+- Webpack5RecommendConfig.newNodeLibrary(env, argv, buildCallback) : 创建node库项目
 
 > 实例对象方法
 
 - build(buildCallback) : 执行构建方法，该方法会执行多个分块构建，接收buildCallback回调可以对webpack配置对象进行细节修改
 - toConfig(debug) : 生成webpack配置对象并返回
+- buildEnd() : 合并上面两个接口操作，返回配置数据
 
 ### QA:
 
@@ -125,7 +149,7 @@ in `package.json`
 > webpack5RecommendConfig保持现代化编程只支持vue3并且默认禁用optionsAPI，启用方法如下：
 
 ```javascript
-const WebpackConfig = require('@systemlight/webpack-config');
+const {Webpack5RecommendConfig:WebpackConfig} = require('@systemlight/webpack-config');
 
 module.exports = (env, argv) => new WebpackConfig(env, argv, {
   define: {
@@ -157,7 +181,7 @@ module.exports = mocks
 `webpack.config.js`
 
 ```javascript
-const webpack5RecommendConfig = require('@systemlight/webpack-config')
+const {Webpack5RecommendConfig} = require('@systemlight/webpack-config')
 const {mockServer} = require('@systemlight/webpack-config-mockserver')
 
 module.exports = (env, argv) => new webpack5RecommendConfig(env, argv, {

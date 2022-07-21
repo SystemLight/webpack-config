@@ -39,11 +39,11 @@ const {createRequire} = require('module')
  */
 
 /**
- * @typedef {Boolean |string[] | {amd?: string, commonjs?: string, root?: string | string[]}} LibraryName
+ * @typedef {Boolean | string | string[] | {amd?: string, commonjs?: string, root?: string | string[]}} LibraryName
  */
 
 /**
- * @callback BuildCallback
+ * @callback GenCallback
  * @param {Webpack5RecommendConfigOptions[]} options - 配置选项
  * @return {void}
  */
@@ -202,10 +202,10 @@ class Webpack5RecommendConfig {
   /**
    * 获取库构建参数
    * @param {LibraryName?} libraryName
-   * @param {BuildCallback?} buildCallback
+   * @param {GenCallback?} genCallback
    * @returns {Webpack5RecommendConfigOptions[]}
    */
-  static buildLibraryOptions(libraryName, buildCallback) {
+  static genLibraryOptions(libraryName, genCallback) {
     let options = [
       {
         emitCss: false,
@@ -217,37 +217,72 @@ class Webpack5RecommendConfig {
       {emitPublic: false},
       {}
     ]
-    if (buildCallback) {
-      buildCallback(options)
+    if (typeof genCallback === 'function') {
+      genCallback(options)
     }
     return options
   }
 
   /**
+   * 创建Webpack5RecommendConfig
+   * @param {any[]} env
+   * @param {Object} argv
+   * @param {'development' | 'production'} argv.mode
+   * @param {LibraryName?} libraryName
+   * @param {GenCallback?} genCallback
+   * @return {Webpack5RecommendConfig}
+   */
+  static newLibrary(env, argv, libraryName, genCallback) {
+    return new Webpack5RecommendConfig(
+      env, argv,
+      Webpack5RecommendConfig.genLibraryOptions(libraryName, genCallback)
+    )
+  }
+
+  /**
    * 获取node库构建参数
-   * @param {BuildCallback?} buildCallback
+   * @param {GenCallback?} genCallback
    * @return {Webpack5RecommendConfigOptions[]}
    */
-  static buildNodeOptions(buildCallback) {
-    return Webpack5RecommendConfig.buildLibraryOptions('library', (options) => {
+  static genNodeOptions(genCallback) {
+    return Webpack5RecommendConfig.genLibraryOptions('library', (options) => {
       options[0].enableResolveCss = false
       options[0].enableResolveAsset = false
       options[0].emitPublic = false
       options[0].enableBuildNodeLibrary = true
-      buildCallback && buildCallback(options)
+      if (typeof genCallback === 'function') {
+        genCallback(options)
+      }
     })
+  }
+
+  /**
+   * 创建Webpack5RecommendConfig
+   * @param {any[]} env
+   * @param {Object} argv
+   * @param {'development' | 'production'} argv.mode
+   * @param {GenCallback?} genCallback
+   * @return {Webpack5RecommendConfig}
+   */
+  static newNodeLibrary(env, argv, genCallback) {
+    return new Webpack5RecommendConfig(
+      env, argv,
+      Webpack5RecommendConfig.genNodeOptions(genCallback)
+    )
   }
 
   /**
    * 获取React库构建参数
    * @param {LibraryName?} libraryName
-   * @param {BuildCallback?} buildCallback
+   * @param {GenCallback?} genCallback
    * @return {Webpack5RecommendConfigOptions[]}
    */
-  static buildReactLibraryOptions(libraryName, buildCallback) {
-    return Webpack5RecommendConfig.buildLibraryOptions(libraryName, (options) => {
+  static genReactLibraryOptions(libraryName, genCallback) {
+    return Webpack5RecommendConfig.genLibraryOptions(libraryName, (options) => {
       options[0].externals = ['react']
-      buildCallback && buildCallback(options)
+      if (typeof genCallback === 'function') {
+        genCallback(options)
+      }
     })
   }
 
@@ -257,44 +292,13 @@ class Webpack5RecommendConfig {
    * @param {Object} argv
    * @param {'development' | 'production'} argv.mode
    * @param {LibraryName?} libraryName
-   * @param {BuildCallback?} buildCallback
+   * @param {GenCallback?} genCallback
    * @return {Webpack5RecommendConfig}
    */
-  static newLibrary(env, argv, libraryName, buildCallback) {
+  static newReactLibrary(env, argv, libraryName, genCallback) {
     return new Webpack5RecommendConfig(
       env, argv,
-      Webpack5RecommendConfig.buildLibraryOptions(libraryName, buildCallback)
-    )
-  }
-
-  /**
-   * 创建Webpack5RecommendConfig
-   * @param {any[]} env
-   * @param {Object} argv
-   * @param {'development' | 'production'} argv.mode
-   * @param {BuildCallback?} buildCallback
-   * @return {Webpack5RecommendConfig}
-   */
-  static newNodeLibrary(env, argv, buildCallback) {
-    return new Webpack5RecommendConfig(
-      env, argv,
-      Webpack5RecommendConfig.buildNodeOptions(buildCallback)
-    )
-  }
-
-  /**
-   * 创建Webpack5RecommendConfig
-   * @param {any[]} env
-   * @param {Object} argv
-   * @param {'development' | 'production'} argv.mode
-   * @param {LibraryName?} libraryName
-   * @param {BuildCallback?} buildCallback
-   * @return {Webpack5RecommendConfig}
-   */
-  static newReactLibrary(env, argv, libraryName, buildCallback) {
-    return new Webpack5RecommendConfig(
-      env, argv,
-      Webpack5RecommendConfig.buildReactLibraryOptions(libraryName, buildCallback)
+      Webpack5RecommendConfig.genReactLibraryOptions(libraryName, genCallback)
     )
   }
 
@@ -310,13 +314,17 @@ class Webpack5RecommendConfig {
     this.buildPlugins()
 
     if (this.enableBuildNodeLibrary) {
-      this.buildNodeLibrary()
+      this.rebuildNodeLibrary()
     }
 
-    if (buildCallback) {
+    if (typeof buildCallback === 'function') {
       buildCallback.call(this, this._config)
     }
     return this
+  }
+
+  buildEnd(buildCallback, debug) {
+    return this.build(buildCallback).toConfig(debug)
   }
 
   buildBasic() {
@@ -435,7 +443,7 @@ class Webpack5RecommendConfig {
     const port = 8080
     this._config.devServer = {
       allowedHosts: 'all',
-      historyApiFallback: false,
+      historyApiFallback: false, // https://github.com/bripkens/connect-history-api-fallback
       host: '0.0.0.0',
       liveReload: true,
       hot: false, // HMR（Hot Module Replacement），JS文件内需要调用accept()
@@ -768,11 +776,38 @@ class Webpack5RecommendConfig {
     return this
   }
 
-  buildNodeLibrary() {
+  rebuildNodeLibrary() {
     this._config.target = 'node'
     this._config.output.library.name = undefined
     this._config.output.library.type = 'commonjs2'
     this._config.output.library.export = undefined
+  }
+
+  rebuildDexterity(vueRuntime = true) {
+    this._config.devtool = false
+    this._config.devServer.open = false
+    this._config.devServer.historyApiFallback = true
+    if (this.isInclude('vue') && !vueRuntime) {
+      this._config.resolve.alias['vue'] = 'vue/dist/vue.esm-bundler.js'
+    }
+  }
+
+  end(buildCallback, debug) {
+    if (typeof buildCallback === 'function') {
+      buildCallback.call(this, this._config)
+    }
+    return this.toConfig(debug)
+  }
+
+  camelCase(content) {
+    if (!content) {
+      return ''
+    }
+    return content.split('/').slice(-1)[0].replace(/-(\w)/g, (_, $1) => $1.toUpperCase())
+  }
+
+  isInclude(libraryName) {
+    return this.dependencies.includes(libraryName)
   }
 
   checkEnableBabel() {
@@ -785,17 +820,6 @@ class Webpack5RecommendConfig {
     if (this.isInclude('react') && !this.isInclude('@babel/preset-react')) {
       throw TypeError('Please add and configure @babel/preset-react in Babel to compile the react project.')
     }
-  }
-
-  camelCase(content) {
-    if (!content) {
-      return ''
-    }
-    return content.split('/').slice(-1)[0].replace(/-(\w)/g, (_, $1) => $1.toUpperCase())
-  }
-
-  isInclude(libraryName) {
-    return this.dependencies.includes(libraryName)
   }
 
   getSplitChunksGroup() {
@@ -897,7 +921,7 @@ class Webpack5RecommendConfig {
   }
 
   configMock(app) {
-    if (this.mockServer) {
+    if (typeof this.mockServer === 'function') {
       this.mockServer(app)
     } else {
       const mockServerPath = path.resolve(this.cwd, 'mock/mock-server.js')
@@ -915,4 +939,19 @@ class Webpack5RecommendConfig {
   }
 }
 
-module.exports = Webpack5RecommendConfig
+/**
+ * WebpackConfigFactory
+ * @param {{debug:boolean?,buildOptions:Webpack5RecommendConfigOptions?,buildConfigCallback:function?}} options
+ * @return {any}
+ */
+function wcf({debug = false, buildOptions = {}, buildConfigCallback = null}) {
+  return (env, argv) => {
+    return new Webpack5RecommendConfig(env, argv, buildOptions)
+      .buildEnd(buildConfigCallback, debug)
+  }
+}
+
+module.exports = {
+  Webpack5RecommendConfig,
+  wcf
+}

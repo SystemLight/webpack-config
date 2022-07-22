@@ -555,9 +555,15 @@ class Webpack5RecommendConfig {
        * 添加ts/tsx解析
        */
       let tsUse = this.enableBabel ? ['babel-loader'] : []
+
       let jsx = 'preserve'
       if (!this.enableBabel && this.isInclude('react')) {
         jsx = 'react-jsxdev'
+      }
+
+      let appendTsSuffixTo = []
+      if (this.isInclude('vue')) {
+        appendTsSuffixTo.push(/\.vue$/)
       }
 
       tsUse.push({
@@ -566,7 +572,7 @@ class Webpack5RecommendConfig {
           // https://github.com/TypeStrong/ts-loader#happypackmode
           happyPackMode: this.enableThread,
           transpileOnly: true,
-          // appendTsSuffixTo: ['\\.vue$'],
+          appendTsSuffixTo: appendTsSuffixTo,
           compilerOptions: {
             jsx: jsx,
             noEmit: true
@@ -862,7 +868,7 @@ class Webpack5RecommendConfig {
       Object.assign(cacheGroups, {
         vue: {
           name: 'vue',
-          test: /[\\/]node_modules[\\/](vue|vue-router|vuex)/,
+          test: /[\\/]node_modules[\\/](@?vue|vue-router|vuex)/,
           chunks: 'all',
           enforce: true
         }

@@ -65,10 +65,25 @@ const {webpack5RecommendConfig} = require('@systemlight/webpack-config')
  * @property {Object?} define - 定义额外的一些字段内容，可以在项目中获取
  * @property {Boolean?} skipCheckBabel - 强制跳过babel启用检查
  * @property {MockServerMiddleware?} mockServer - mockServer中间件
+ * @property {EachPlugin?} eachPlugin - 依次访问每个插件实例可以修改对象
  */
 
 /**
- * @callback BuildCallback
+ * @typedef {Boolean | string | string[] | {amd?: string, commonjs?: string, root?: string | string[]}} LibraryName
+ */
+
+/**
+ * @typedef {{name:string,constructor:any,args:any[]}} Plugin
+ */
+
+/**
+ * @callback EachPlugin
+ * @param {Plugin} plugin
+ * @return {void}
+ */
+
+/**
+ * @callback GenCallback
  * @param {Webpack5RecommendConfigOptions[]} options - 配置选项
  * @return {void}
  */
@@ -78,6 +93,8 @@ const {webpack5RecommendConfig} = require('@systemlight/webpack-config')
  * @param {any} app - express实例
  * @return {void}
  */
+
+const {webpack5RecommendConfig} = require('@systemlight/webpack-config');
 
 module.exports = (env, argv) => new webpack5RecommendConfig(env, argv)
   .build(function (config) {

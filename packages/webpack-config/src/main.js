@@ -36,10 +36,21 @@ const {createRequire} = require('module')
  * @property {Object?} define - 定义额外的一些字段内容，可以在项目中获取
  * @property {Boolean?} skipCheckBabel - 强制跳过babel启用检查
  * @property {MockServerMiddleware?} mockServer - mockServer中间件
+ * @property {EachPlugin?} eachPlugin - 依次访问每个插件实例可以修改对象
  */
 
 /**
  * @typedef {Boolean | string | string[] | {amd?: string, commonjs?: string, root?: string | string[]}} LibraryName
+ */
+
+/**
+ * @typedef {{name:string,constructor:any,args:any[]}} Plugin
+ */
+
+/**
+ * @callback EachPlugin
+ * @param {Plugin} plugin
+ * @return {void}
  */
 
 /**
@@ -111,7 +122,8 @@ class Webpack5RecommendConfig {
       externals: [],
       define: {},
       skipCheckBabel: false,
-      mockServer: null
+      mockServer: null,
+      eachPlugin: null
     }
 
     if (Array.isArray(options)) {
@@ -184,6 +196,7 @@ class Webpack5RecommendConfig {
     this.define = _options.define
     this.skipCheckBabel = _options.skipCheckBabel
     this.mockServer = _options.mockServer
+    this.eachPlugin = _options.eachPlugin
 
     this._webpack = this.require('webpack')
     this._config = {}
@@ -677,10 +690,13 @@ class Webpack5RecommendConfig {
        * 将 CSS 提取到单独的文件中
        * https://webpack.js.org/plugins/mini-css-extract-plugin/
        */
-      this._config.plugins.push(
-        new (this.require('mini-css-extract-plugin'))({
-          filename: this.enableHash ? '[name].style.[chunkhash:8].css' : '[name].style.css'
-        })
+      this.pushPlugin(
+        'mini-css-extract-plugin',
+        [
+          {
+            filename: this.enableHash ? '[name].style.[chunkhash:8].css' : '[name].style.css'
+          }
+        ]
       )
     }
 
@@ -704,7 +720,10 @@ class Webpack5RecommendConfig {
           }
           : false
       }
-      this._config.plugins.push(new (this.require('html-webpack-plugin'))(htmWebpackPluginOptions))
+      this.pushPlugin(
+        'html-webpack-plugin',
+        [htmWebpackPluginOptions]
+      )
     }
 
     if (this.emitPublic && fs.existsSync(this.staticFolderPath)) {
@@ -712,15 +731,18 @@ class Webpack5RecommendConfig {
        * 将已存在的单个文件或整个目录复制到构建目录
        * https://webpack.js.org/plugins/copy-webpack-plugin
        */
-      this._config.plugins.push(
-        new (this.require('copy-webpack-plugin'))({
-          patterns: [
-            {
-              from: this.staticFolderPath,
-              to: '.'
-            }
-          ]
-        })
+      this.pushPlugin(
+        'copy-webpack-plugin',
+        [
+          {
+            patterns: [
+              {
+                from: this.staticFolderPath,
+                to: '.'
+              }
+            ]
+          }
+        ]
       )
     }
 
@@ -729,22 +751,33 @@ class Webpack5RecommendConfig {
        * Elegant ProgressBar and Profiler for Webpack 3 , 4 and 5
        * https://github.com/unjs/webpackbar
        */
-      this._config.plugins.push(
-        new (this.require('webpackbar'))({
-          reporters: ['fancy', 'profile'],
-          profile: true
-        })
+      this.pushPlugin(
+        'webpackbar',
+        [
+          {
+            reporters: ['fancy', 'profile'],
+            profile: true
+          }
+        ]
       )
     } else {
-      this._config.plugins.push(new (this.require('webpackbar'))())
+      this.pushPlugin(
+        'webpackbar',
+        []
+      )
     }
 
     if (this.isStartSever) {
-      this._config.plugins.push(new (this.require('@soda/friendly-errors-webpack-plugin'))({
-        compilationSuccessInfo: {
-          messages: [`You application is running here http://localhost:${this._config.devServer.port}`]
-        }
-      }))
+      this.pushPlugin(
+        '@soda/friendly-errors-webpack-plugin',
+        [
+          {
+            compilationSuccessInfo: {
+              messages: [`You application is running here http://localhost:${this._config.devServer.port}`]
+            }
+          }
+        ]
+      )
     }
 
     /**
@@ -757,7 +790,11 @@ class Webpack5RecommendConfig {
         __VUE_PROD_DEVTOOLS__: this.isDevelopment
       }, this.define)
     }
-    this._config.plugins.push(new this._webpack.DefinePlugin(this.define))
+    this.pushPlugin(
+      '_webpack.DefinePlugin',
+      this._webpack.DefinePlugin,
+      [this.define]
+    )
 
     /**
      * 在监视模式下忽略指定的文件
@@ -767,16 +804,24 @@ class Webpack5RecommendConfig {
       let ignorePaths = []
       // https://github.com/TypeStrong/ts-loader#usage-with-webpack-watch
       ignorePaths.push(/\.js$/, /\.d\.ts$/)
-      this._config.plugins.push(
-        new this._webpack.WatchIgnorePlugin({
-          paths: ignorePaths
-        })
+      this.pushPlugin(
+        '_webpack.WatchIgnorePlugin',
+        this._webpack.WatchIgnorePlugin,
+        [
+          {
+            paths: ignorePaths
+          }
+        ]
       )
     }
 
     if (this.isInclude('vue')) {
       const {VueLoaderPlugin} = this.require('vue-loader')
-      this._config.plugins.push(new VueLoaderPlugin())
+      this.pushPlugin(
+        'VueLoaderPlugin',
+        VueLoaderPlugin,
+        []
+      )
     }
 
     return this
@@ -810,6 +855,31 @@ class Webpack5RecommendConfig {
       return ''
     }
     return content.split('/').slice(-1)[0].replace(/-(\w)/g, (_, $1) => $1.toUpperCase())
+  }
+
+  /**
+   * 推入配置文件插件，该方法推入的插件会触发eachPlugin
+   * @param {string} name
+   * @param {Function | any[]} constructor
+   * @param {any[]?} args
+   */
+  pushPlugin(name, constructor, args) {
+    let plugin = {name}
+    if (Array.isArray(constructor)) {
+      plugin.constructor = this.require(name)
+      plugin.args = constructor
+    } else if (typeof constructor === 'function') {
+      plugin.constructor = constructor
+      plugin.args = args || []
+    } else {
+      throw TypeError('unsupported constructor')
+    }
+
+    if (typeof this.eachPlugin === 'function') {
+      this.eachPlugin(plugin)
+    }
+
+    this._config.plugins.push(new (plugin.constructor)(...plugin.args))
   }
 
   isInclude(libraryName) {

@@ -14,6 +14,7 @@ const {createRequire} = require('module')
  * @property {String?} scriptExt - 入口脚本扩展名称
  * @property {String?} entryDefaultName - 入口默认名,webpack默认入口为index.js，输出为main.js
  * @property {String | null?} entryDefaultFileName - 入口文件默认名称
+ * @property {Boolean?} enableFriendly - 是否启用更加友好的提示，需要额外安装插件
  * @property {Boolean?} enableProfile - 是否统计并打印webpack打包详细信息
  * @property {Boolean?} enableProxy - 是否启用代理配置
  * @property {Boolean?} enableMock - 是否mock数据代理配置
@@ -99,6 +100,7 @@ class Webpack5RecommendConfig {
       entryDefaultName: 'main',
       entryDefaultFileName: null,
 
+      enableFriendly: false,
       enableProfile: false,
       enableProxy: false,
       enableMock: false,
@@ -111,7 +113,7 @@ class Webpack5RecommendConfig {
       enableResolveAsset: true,
       enableBuildNodeLibrary: false,
 
-      emitHtml: true,
+      emitHtml: false,
       emitCss: this.isProduction,
       emitPublic: true,
 
@@ -169,6 +171,7 @@ class Webpack5RecommendConfig {
     this.entryDefaultName = _options.entryDefaultName
     this.entryDefaultFileName = _options.entryDefaultFileName || `${this.entryDefaultName}${this.scriptExt}`
 
+    this.enableFriendly = _options.enableFriendly
     this.enableProfile = _options.enableProfile
     this.enableProxy = _options.enableProxy
     this.enableMock = _options.enableMock
@@ -746,28 +749,30 @@ class Webpack5RecommendConfig {
       )
     }
 
-    if (this.enableProfile) {
-      /**
-       * Elegant ProgressBar and Profiler for Webpack 3 , 4 and 5
-       * https://github.com/unjs/webpackbar
-       */
-      this.pushPlugin(
-        'webpackbar',
-        [
-          {
-            reporters: ['fancy', 'profile'],
-            profile: true
-          }
-        ]
-      )
-    } else {
-      this.pushPlugin(
-        'webpackbar',
-        []
-      )
+    if (this.enableFriendly) {
+      if (this.enableProfile) {
+        /**
+         * Elegant ProgressBar and Profiler for Webpack 3 , 4 and 5
+         * https://github.com/unjs/webpackbar
+         */
+        this.pushPlugin(
+          'webpackbar',
+          [
+            {
+              reporters: ['fancy', 'profile'],
+              profile: true
+            }
+          ]
+        )
+      } else {
+        this.pushPlugin(
+          'webpackbar',
+          []
+        )
+      }
     }
 
-    if (this.isStartSever) {
+    if (this.enableFriendly && this.isStartSever) {
       this.pushPlugin(
         '@soda/friendly-errors-webpack-plugin',
         [
@@ -777,6 +782,18 @@ class Webpack5RecommendConfig {
             }
           }
         ]
+      )
+    }
+
+    if (this.isInclude('vue')) {
+      /**
+       * 加载vue文件必须插件
+       */
+      const {VueLoaderPlugin} = this.require('vue-loader')
+      this.pushPlugin(
+        'VueLoaderPlugin',
+        VueLoaderPlugin,
+        []
       )
     }
 
@@ -812,15 +829,6 @@ class Webpack5RecommendConfig {
             paths: ignorePaths
           }
         ]
-      )
-    }
-
-    if (this.isInclude('vue')) {
-      const {VueLoaderPlugin} = this.require('vue-loader')
-      this.pushPlugin(
-        'VueLoaderPlugin',
-        VueLoaderPlugin,
-        []
       )
     }
 

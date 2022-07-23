@@ -20,9 +20,9 @@
 ### Usage
 
 ```bash
-npm i @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
-yarn add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
-pnpm add @systemlight/webpack-config webpack webpack-cli webpack-dev-server webpackbar @soda/friendly-errors-webpack-plugin html-webpack-plugin -D
+npm i @systemlight/webpack-config webpack webpack-cli -D
+yarn add @systemlight/webpack-config webpack webpack-cli -D
+pnpm add @systemlight/webpack-config webpack webpack-cli -D
 ```
 
 in `webpack.config.js`
@@ -43,6 +43,7 @@ const {webpack5RecommendConfig} = require('@systemlight/webpack-config')
  * @property {String?} scriptExt - 入口脚本扩展名称
  * @property {String?} entryDefaultName - 入口默认名,webpack默认入口为index.js，输出为main.js
  * @property {String | null?} entryDefaultFileName - 入口文件默认名称
+ * @property {Boolean?} enableFriendly - 是否启用更加友好的提示，需要额外安装插件
  * @property {Boolean?} enableProfile - 是否统计并打印webpack打包详细信息
  * @property {Boolean?} enableProxy - 是否启用代理配置
  * @property {Boolean?} enableMock - 是否mock数据代理配置

@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "5.4.3",
+  "version": "5.4.7",
   "scripts": {
     "lint:prettier": "prettier src/ -w",
     "lint:eslint-check": "eslint src/ --ext .jsx,.js,ts,tsx",
@@ -31,6 +31,14 @@
   },
   "engines": {
     "node": ">=16.15.0"
+  },
+  "peerDependenciesMeta": {
+    "webpackbar": {
+      "optional": true
+    },
+    "@soda/friendly-errors-webpack-plugin": {
+      "optional": true
+    }
   },
   "peerDependencies": {
     "webpack": "^5.20.0",

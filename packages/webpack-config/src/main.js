@@ -50,6 +50,7 @@ const {createRequire} = require('module')
 
 /**
  * @callback EachPlugin
+ * @this Webpack5RecommendConfig
  * @param {Plugin} plugin
  * @return {void}
  */
@@ -57,6 +58,13 @@ const {createRequire} = require('module')
 /**
  * @callback GenCallback
  * @param {Webpack5RecommendConfigOptions[]} options - 配置选项
+ * @return {void}
+ */
+
+/**
+ * @callback BuildConfigCallback
+ * @this Webpack5RecommendConfig
+ * @param {any} config
  * @return {void}
  */
 
@@ -871,11 +879,16 @@ class Webpack5RecommendConfig {
 
   /**
    * 推入配置文件插件，该方法推入的插件会触发eachPlugin
-   * @param {string} name
-   * @param {Function | any[]} constructor
+   * @param {string | Object} name
+   * @param {Function | any[]?} constructor
    * @param {any[]?} args
    */
   pushPlugin(name, constructor, args) {
+    if (typeof name !== 'string') {
+      this._config.plugins.push(name)
+      return
+    }
+
     let plugin = {name}
     if (Array.isArray(constructor)) {
       plugin.constructor = this.require(name)
@@ -1029,7 +1042,7 @@ class Webpack5RecommendConfig {
 
 /**
  * WebpackConfigFactory
- * @param {{debug:boolean?,buildOptions:Webpack5RecommendConfigOptions?,buildConfigCallback:function?}?} options
+ * @param {{debug:boolean?,buildOptions:Webpack5RecommendConfigOptions?,buildConfigCallback:BuildConfigCallback?}?} options
  * @return {any}
  */
 function wcf(options) {

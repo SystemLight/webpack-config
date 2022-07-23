@@ -6,6 +6,9 @@
     "lint:eslint-check": "eslint src/ --ext .jsx,.js,ts,tsx",
     "lint:eslint": "eslint src/ --ext .jsx,.js,ts,tsx --fix"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "webpack",
     "webpack5",
@@ -41,9 +44,9 @@
     }
   },
   "peerDependencies": {
-    "webpack": "^5.20.0",
-    "webpackbar": "^5.0.2",
-    "@soda/friendly-errors-webpack-plugin": "^1.8.1"
+    "webpack": "^5.0.0",
+    "webpackbar": "^5.0.0",
+    "@soda/friendly-errors-webpack-plugin": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",

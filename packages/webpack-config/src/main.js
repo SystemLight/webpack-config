@@ -347,7 +347,8 @@ class Webpack5RecommendConfig {
     this._config.mode = this.mode
     this._config.stats = 'errors-only'
     this._config.infrastructureLogging = {level: 'error'}
-    this._config.devtool = this.isDevelopment ? 'eval-source-map' : false
+    // 保持和 @vue/cli-service 同款默认项
+    this._config.devtool = this.isDevelopment ? 'eval-cheap-module-source-map' : false
     this._config.context = this.cwd
     if (this.isDevelopment) {
       this._config.target = 'web' // 默认值：browserslist
@@ -467,6 +468,9 @@ class Webpack5RecommendConfig {
       port: port,
       magicHtml: false,
       // https://github.com/webpack/webpack-dev-middleware
+      client: {
+        logging: 'error'
+      },
       devMiddleware: {
         stats: false
       }

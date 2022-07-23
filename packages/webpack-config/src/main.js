@@ -1025,11 +1025,14 @@ class Webpack5RecommendConfig {
 
 /**
  * WebpackConfigFactory
- * @param {{debug:boolean?,buildOptions:Webpack5RecommendConfigOptions?,buildConfigCallback:function?}} options
+ * @param {{debug:boolean?,buildOptions:Webpack5RecommendConfigOptions?,buildConfigCallback:function?}?} options
  * @return {any}
  */
-function wcf({debug = false, buildOptions = {}, buildConfigCallback = null}) {
+function wcf(options) {
+  const _options = {debug: false, buildOptions: {}, buildConfigCallback: null}
+  Object.assign(_options, options)
   return (env, argv) => {
+    const {debug, buildOptions, buildConfigCallback} = _options
     return new Webpack5RecommendConfig(env, argv, buildOptions)
       .buildEnd(buildConfigCallback, debug)
   }

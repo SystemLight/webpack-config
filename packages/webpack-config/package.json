@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "5.4.8",
+  "version": "5.5.0",
   "scripts": {
     "lint:prettier": "prettier src/ -w",
     "lint:eslint-check": "eslint src/ --ext .jsx,.js,ts,tsx",
@@ -44,9 +44,9 @@
     }
   },
   "peerDependencies": {
+    "@soda/friendly-errors-webpack-plugin": "^1.0.0",
     "webpack": "^5.0.0",
-    "webpackbar": "^5.0.0",
-    "@soda/friendly-errors-webpack-plugin": "^1.0.0"
+    "webpackbar": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",
@@ -57,5 +57,8 @@
     "core-js": "^3.23.1",
     "eslint": "^8.17.0",
     "prettier": "^2.7.0"
+  },
+  "dependencies": {
+    "webpack-merge": "^5.8.0"
   }
 }

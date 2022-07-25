@@ -2,6 +2,8 @@ const path = require('path')
 const fs = require('fs')
 const {createRequire} = require('module')
 
+const {merge} = require('webpack-merge')
+
 /**
  * @typedef Webpack5RecommendConfigOptions
  * @property {String?} cwd - 当前运行webpack所在位置
@@ -1030,6 +1032,19 @@ class Webpack5RecommendConfig {
         require(mockServerPath)(app)
       }
     }
+  }
+
+  mergeConfig(firstConfiguration, ...config) {
+    if (Array.isArray(firstConfiguration)) {
+      firstConfiguration.unshift(this._config)
+      this._config = merge(firstConfiguration)
+    } else {
+      this._config = merge(this._config, firstConfiguration, ...config)
+    }
+  }
+
+  setConfig(config) {
+    this._config = config
   }
 
   toConfig(debug) {

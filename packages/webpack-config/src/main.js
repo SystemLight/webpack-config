@@ -1042,7 +1042,7 @@ class Webpack5RecommendConfig {
 
 /**
  * WebpackConfigFactory
- * @param {{debug:boolean?,buildOptions:Webpack5RecommendConfigOptions?,buildConfigCallback:BuildConfigCallback?}?} options
+ * @param {{debug:boolean?,buildOptions:Webpack5RecommendConfigOptions[] | Webpack5RecommendConfigOptions?,buildConfigCallback:BuildConfigCallback?}?} options
  * @return {any}
  */
 function wcf(options) {

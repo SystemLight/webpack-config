@@ -66,7 +66,7 @@ const {merge} = require('webpack-merge')
 /**
  * @callback BuildConfigCallback
  * @this Webpack5RecommendConfig
- * @param {any} config
+ * @param {{value:Object}} config
  * @return {void}
  */
 
@@ -343,14 +343,31 @@ class Webpack5RecommendConfig {
       this.rebuildNodeLibrary()
     }
 
-    if (typeof buildCallback === 'function') {
-      buildCallback.call(this, this._config)
-    }
+    this.buildCallback(buildCallback)
+
     return this
   }
 
   buildEnd(buildCallback, debug) {
     return this.build(buildCallback).toConfig(debug)
+  }
+
+  buildCallback(callback) {
+    if (typeof callback === 'function') {
+      const that = this
+      const _configRef = {}
+      Object.defineProperty(_configRef, 'value', {
+        configurable: false,
+        enumerable: true,
+        get() {
+          return that._config
+        },
+        set(value) {
+          that.mergeConfig(value)
+        }
+      })
+      callback.call(this, _configRef)
+    }
   }
 
   buildBasic() {
@@ -866,9 +883,7 @@ class Webpack5RecommendConfig {
   }
 
   end(buildCallback, debug) {
-    if (typeof buildCallback === 'function') {
-      buildCallback.call(this, this._config)
-    }
+    this.buildCallback(buildCallback)
     return this.toConfig(debug)
   }
 

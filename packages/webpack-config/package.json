@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "5.5.0",
+  "version": "5.5.2",
   "scripts": {
     "lint:prettier": "prettier src/ -w",
     "lint:eslint-check": "eslint src/ --ext .jsx,.js,ts,tsx",

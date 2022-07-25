@@ -100,7 +100,10 @@ const {webpack5RecommendConfig} = require('@systemlight/webpack-config');
 module.exports = (env, argv) => new webpack5RecommendConfig(env, argv)
   .build(function (config) {
     if (this.isDevelopment) {
-      config.devtool = false
+      // 设置值内容会被自动merge
+      config.value = {
+        devtool: false
+      }
     }
   })
   .toConfig();
@@ -113,19 +116,19 @@ const {wcf} = require('@systemlight/webpack-config');
 const AgreedRoutingPlugin = require('./agreed-route-plugin');
 
 module.exports = wcf({
-    buildOptions: {
-        postcss: true,
-        emitCss: false,
-        enableBabel: false,
-        skipCheckBabel: true,
-        define: {
-            __VUE_OPTIONS_API__: true
-        }
-    },
-    buildConfigCallback(config) {
-        this.rebuildDexterity(false)
-        config.plugins.push(new AgreedRoutingPlugin())
+  buildOptions: {
+    postcss: true,
+    emitCss: false,
+    enableBabel: false,
+    skipCheckBabel: true,
+    define: {
+      __VUE_OPTIONS_API__: true
     }
+  },
+  buildConfigCallback(config) {
+    this.rebuildDexterity(false)
+    config.plugins.push(new AgreedRoutingPlugin())
+  }
 })
 ```
 
@@ -167,7 +170,7 @@ in `package.json`
 > webpack5RecommendConfig保持现代化编程只支持vue3并且默认禁用optionsAPI，启用方法如下：
 
 ```javascript
-const {Webpack5RecommendConfig:WebpackConfig} = require('@systemlight/webpack-config');
+const {Webpack5RecommendConfig: WebpackConfig} = require('@systemlight/webpack-config');
 
 module.exports = (env, argv) => new WebpackConfig(env, argv, {
   define: {

@@ -43,7 +43,7 @@ const {merge} = require('webpack-merge')
  */
 
 /**
- * @typedef {import('../types/config').WebpackOptionsNormalized} WebpackOptionsNormalized
+ * @typedef {import('./types/config').WebpackOptionsNormalized} WebpackOptionsNormalized
  */
 
 /**

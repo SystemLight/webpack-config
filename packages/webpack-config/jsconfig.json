@@ -2,8 +2,7 @@
   "include": [
     "src/**/*",
     "types/**/*",
-    "tests/**/*",
-    "types/**/*"
+    "tests/**/*"
   ],
   "exclude": [
     "src/assets/**/*",

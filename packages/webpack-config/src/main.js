@@ -43,6 +43,10 @@ const {merge} = require('webpack-merge')
  */
 
 /**
+ * @typedef {import('../types/config').WebpackOptionsNormalized} WebpackOptionsNormalized
+ */
+
+/**
  * @typedef {Boolean | string | string[] | {amd?: string, commonjs?: string, root?: string | string[]}} LibraryName
  */
 
@@ -66,7 +70,7 @@ const {merge} = require('webpack-merge')
 /**
  * @callback BuildConfigCallback
  * @this Webpack5RecommendConfig
- * @param {{value:Object}} config
+ * @param {{value:WebpackOptionsNormalized}} config
  * @return {void}
  */
 
@@ -211,8 +215,13 @@ class Webpack5RecommendConfig {
     this.mockServer = _options.mockServer
     this.eachPlugin = _options.eachPlugin
 
-    this._webpack = this.require('webpack')
+    /**
+     * webpack配置对象
+     * @private
+     * @type {WebpackOptionsNormalized}
+     */
     this._config = {}
+    this._webpack = this.require('webpack')
 
     if (this.isProduction) {
       this.checkEnableBabel()
@@ -328,6 +337,12 @@ class Webpack5RecommendConfig {
     )
   }
 
+  /**
+   * [all build]->[build callback]
+   * 调用所有默认构建方法，并且可以传入最终处理构建回调
+   * @param {BuildConfigCallback?} buildCallback
+   * @return {Webpack5RecommendConfig}
+   */
   build(buildCallback) {
     // webpack5配置文档：https://webpack.js.org/configuration/
     this.buildBasic()
@@ -346,28 +361,6 @@ class Webpack5RecommendConfig {
     this.buildCallback(buildCallback)
 
     return this
-  }
-
-  buildEnd(buildCallback, debug) {
-    return this.build(buildCallback).toConfig(debug)
-  }
-
-  buildCallback(callback) {
-    if (typeof callback === 'function') {
-      const that = this
-      const _configRef = {}
-      Object.defineProperty(_configRef, 'value', {
-        configurable: false,
-        enumerable: true,
-        get() {
-          return that._config
-        },
-        set(value) {
-          that.mergeConfig(value)
-        }
-      })
-      callback.call(this, _configRef)
-    }
   }
 
   buildBasic() {
@@ -866,6 +859,55 @@ class Webpack5RecommendConfig {
     return this
   }
 
+  /**
+   * [build callback]
+   * 传入最终处理构建回调
+   * @param {BuildConfigCallback?} callback
+   * @return {Webpack5RecommendConfig}
+   */
+  buildCallback(callback) {
+    if (typeof callback === 'function') {
+      const that = this
+      const _configRef = {}
+      Object.defineProperty(_configRef, 'value', {
+        configurable: false,
+        enumerable: true,
+        get() {
+          return that._config
+        },
+        set(value) {
+          that.mergeConfig(value)
+        }
+      })
+      callback.call(this, _configRef)
+    }
+
+    return this
+  }
+
+  /**
+   * [all build]->[build callback]->[config]
+   * 调用所有默认构建方法，同时返回配置文件对象
+   * @param {BuildConfigCallback?} buildCallback
+   * @param {Boolean?} debug
+   * @return {WebpackOptionsNormalized}
+   */
+  buildEnd(buildCallback, debug) {
+    return this.build(buildCallback).toConfig(debug)
+  }
+
+  /**
+   * [build callback]->[config]
+   * 传入最终处理构建回调，返回配置文件对象
+   * @param {BuildConfigCallback?} buildCallback
+   * @param {Boolean?} debug
+   * @return {WebpackOptionsNormalized}
+   */
+  end(buildCallback, debug) {
+    this.buildCallback(buildCallback)
+    return this.toConfig(debug)
+  }
+
   rebuildNodeLibrary() {
     this._config.target = 'node'
     this._config.output.library.name = undefined
@@ -880,11 +922,6 @@ class Webpack5RecommendConfig {
     if (this.isInclude('vue') && !vueRuntime) {
       this._config.resolve.alias['vue'] = 'vue/dist/vue.esm-bundler.js'
     }
-  }
-
-  end(buildCallback, debug) {
-    this.buildCallback(buildCallback)
-    return this.toConfig(debug)
   }
 
   camelCase(content) {

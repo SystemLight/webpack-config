@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "5.5.2",
+  "version": "5.5.6",
   "scripts": {
     "lint:prettier": "prettier src/ -w",
     "lint:eslint-check": "eslint src/ --ext .jsx,.js,ts,tsx",
@@ -19,12 +19,13 @@
   "description": "Webpack common configuration.",
   "main": "src/main.js",
   "files": [
-    "src"
+    "src/",
+    "types/"
   ],
-  "bin": {},
+  "types": "types/",
   "author": "SystemLighht",
   "license": "MIT",
-  "homepage": "https://github.com/SystemLight/webpack-config#readme",
+  "homepage": "https://github.com/SystemLight/webpack-config/tree/master/packages/webpack-config#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SystemLight/webpack-config"
@@ -45,7 +46,6 @@
   },
   "peerDependencies": {
     "@soda/friendly-errors-webpack-plugin": "^1.0.0",
-    "webpack": "^5.0.0",
     "webpackbar": "^5.0.0"
   },
   "devDependencies": {

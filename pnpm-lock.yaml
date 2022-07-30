@@ -7,6 +7,7 @@ importers:
       '@babel/core': ^7.18.9
       '@babel/eslint-parser': ^7.18.9
       '@babel/preset-env': ^7.18.9
+      '@commitlint/config-conventional': ^17.0.3
       commitlint: ^17.0.3
       eslint: ^8.20.0
       husky: ^8.0.1
@@ -16,6 +17,7 @@ importers:
       '@babel/core': 7.18.9
       '@babel/eslint-parser': 7.18.9_454u7sltq2wfyzqnoclqps3oeu
       '@babel/preset-env': 7.18.9_@babel+core@7.18.9
+      '@commitlint/config-conventional': 17.0.3
       commitlint: 17.0.3
       eslint: 8.20.0
       husky: 8.0.1
@@ -1253,6 +1255,13 @@ packages:
       - '@swc/wasm'
     dev: true
 
+  /@commitlint/config-conventional/17.0.3:
+    resolution: {integrity: sha512-HCnzTm5ATwwwzNVq5Y57poS0a1oOOcd5pc1MmBpLbGmSysc4i7F/++JuwtdFPu16sgM3H9J/j2zznRLOSGVO2A==}
+    engines: {node: '>=v14'}
+    dependencies:
+      conventional-changelog-conventionalcommits: 5.0.0
+    dev: true
+
   /@commitlint/config-validator/17.0.3:
     resolution: {integrity: sha512-3tLRPQJKapksGE7Kee9axv+9z5I2GDHitDH4q63q7NmNA0wkB+DAorJ0RHz2/K00Zb1/MVdHzhCga34FJvDihQ==}
     engines: {node: '>=v14'}
@@ -2330,6 +2339,15 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       compare-func: 2.0.0
+      q: 1.5.1
+    dev: true
+
+  /conventional-changelog-conventionalcommits/5.0.0:
+    resolution: {integrity: sha512-lCDbA+ZqVFQGUj7h9QBKoIpLhl8iihkO0nCTyRNzuXtcd7ubODpYB04IFy31JloiJgG0Uovu8ot8oxRzn7Nwtw==}
+    engines: {node: '>=10'}
+    dependencies:
+      compare-func: 2.0.0
+      lodash: 4.17.21
       q: 1.5.1
     dev: true
 

@@ -1,7 +1,14 @@
 {
-  "name": "@systemlight/webpack-config-packages",
+  "name": "@systemlight/webpack-config-monorepo",
   "private": true,
   "version": "1.0.0",
+  "scripts": {
+    "prepare": "husky install",
+    "lint:prettier": "prettier -w \"packages/**/*.js\"",
+    "lint:eslint-check": "eslint --ext .js packages/*/src/",
+    "lint:eslint": "eslint --fix --ext .js packages/*/src/",
+    "dev:server": "pnpm -C packages/webpack-config-dev serve"
+  },
   "workspaces": [
     "packages/*"
   ],
@@ -14,5 +21,19 @@
   },
   "bugs": {
     "url": "https://github.com/SystemLight/webpack-config/issues"
+  },
+  "engines": {
+    "node": ">=16.15.0"
+  },
+  "packageManager": "pnpm@7.3.0",
+  "devDependencies": {
+    "@babel/core": "^7.18.9",
+    "@babel/eslint-parser": "^7.18.9",
+    "@babel/preset-env": "^7.18.9",
+    "commitlint": "^17.0.3",
+    "eslint": "^8.20.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1"
   }
 }

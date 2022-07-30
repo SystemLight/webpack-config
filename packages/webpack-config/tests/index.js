@@ -1,4 +1,4 @@
-const {wcf} = require('../src/main');
+const {wcf} = require('../src/main')
 
 wcf({
   buildConfigCallback(config) {
@@ -41,9 +41,7 @@ wcf({
           }
         ]
       },
-      plugins: [
-        new MyPlugin()
-      ]
+      plugins: [new MyPlugin()]
     }
   }
 })

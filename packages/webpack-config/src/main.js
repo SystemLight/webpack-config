@@ -2,6 +2,14 @@ const path = require('path')
 const fs = require('fs')
 const {createRequire} = require('module')
 
+const webpack = require('webpack')
+const WebpackBar = require('webpackbar')
+const FriendlyErrorsWebpackPlugin = require('@soda/friendly-errors-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const TerserWebpackPlugin = require('terser-webpack-plugin')
+const {mockServer} = require('@systemlight/webpack-config-mockserver')
 const {merge} = require('webpack-merge')
 
 /**
@@ -11,30 +19,34 @@ const {merge} = require('webpack-merge')
  * @property {String?} distPath - 输出文件位置
  * @property {Object?} packageJSONFilePath - package.json文件目录，绝对路径
  * @property {String?} staticFolderPath - 静态文件public目录
+ *
  * @property {Boolean?} isTsProject - 是否为TS项目
  * @property {Boolean?} isEntryJSX - 定义入口文件是否是JSX或者TSX
  * @property {String?} scriptExt - 入口脚本扩展名称
  * @property {String?} entryDefaultName - 入口默认名,webpack默认入口为index.js，输出为main.js
  * @property {String | null?} entryDefaultFileName - 入口文件默认名称
- * @property {Boolean?} enableFriendly - 是否启用更加友好的提示，需要额外安装插件
- * @property {Boolean?} enableProfile - 是否统计并打印webpack打包详细信息
- * @property {Boolean?} enableProxy - 是否启用代理配置
- * @property {Boolean?} enableMock - 是否mock数据代理配置
- * @property {Boolean?} enableThread - 是否启用多线程
- * @property {Boolean?} enableHash - 是否启用HASH
- * @property {Boolean?} enableSplitChunk - 是否启用代码Chunk切分
- * @property {Boolean?} enableBabel - 默认生产环境进行babel编译，如果你使用React JSX那么需要永久启用并添加@babel/preset-react
- * @property {Boolean?} enableMinimize - 是否开启压缩代码
- * @property {Boolean?} enableResolveCss - 是否解析样式文件
- * @property {Boolean?} enableResolveAsset - 是否解析资源文件
- * @property {Boolean?} enableBuildNodeLibrary - 是否启用构建node库的环境配置
+ *
+ * @property {AutoVal?} enableFriendly - 是否启用更加友好的提示，需要额外安装插件
+ * @property {AutoVal?} enableProfile - 是否统计并打印webpack打包详细信息
+ * @property {AutoVal?} enableProxy - 是否启用代理配置
+ * @property {AutoVal?} enableMock - 是否mock数据代理配置
+ * @property {AutoVal?} enableThread - 是否启用多线程
+ * @property {AutoVal?} enableHash - 是否启用HASH
+ * @property {AutoVal?} enableSplitChunk - 是否启用代码Chunk切分
+ * @property {AutoVal?} enableBabel - 默认生产环境进行babel编译，如果你使用React JSX那么需要永久启用并添加@babel/preset-react
+ * @property {AutoVal?} enablePostcss - 是否启用postcss解析样式
+ * @property {AutoVal?} enableMinimize - 是否开启压缩代码
+ * @property {AutoVal?} enableResolveCss - 是否解析样式文件
+ * @property {AutoVal?} enableResolveAsset - 是否解析资源文件
+ *
  * @property {Boolean?} emitHtml - 是否弹出HTML文件
- * @property {Boolean?} emitCss - 是否分离css
+ * @property {AutoVal?} emitCss - 是否分离css
  * @property {Boolean?} emitPublic - 是否复制public中静态文件
+ *
  * @property {String | null?} title - 主页标题
  * @property {String?} publicPath - 发布时URL访问路径
+ * @property {Boolean?} isNodeLibrary - 是否启用构建node库的环境配置
  * @property {LibraryName?} libraryName - 是否作为库函数进行发布
- * @property {Boolean | 'auto'?} postcss - 是否启用postcss解析样式
  * @property {String[]?} externals - 需要做排除的库，目前支持react
  * @property {Object?} define - 定义额外的一些字段内容，可以在项目中获取
  * @property {Boolean?} skipCheckBabel - 强制跳过babel启用检查
@@ -44,6 +56,10 @@ const {merge} = require('webpack-merge')
 
 /**
  * @typedef {import('./types/config').WebpackOptionsNormalized} WebpackOptionsNormalized
+ */
+
+/**
+ * @typedef {'auto' | '!auto' | '^auto' | Boolean} AutoVal
  */
 
 /**
@@ -114,34 +130,36 @@ class Webpack5RecommendConfig {
       entryDefaultName: 'main',
       entryDefaultFileName: null,
 
-      enableFriendly: false,
+      // 所有enable开头的都是AutoVal类型，可以使用Boolean或者auto或者!auto，auto为生产环境启用
+      enableFriendly: true,
       enableProfile: false,
       enableProxy: false,
       enableMock: false,
       enableThread: false,
-      enableHash: true,
-      enableSplitChunk: true,
-      enableBabel: this.isProduction,
-      enableMinimize: this.isProduction,
-      enableResolveCss: true,
+      enableHash: false,
+      enableSplitChunk: false,
+      enableBabel: false,
+      enablePostcss: false,
+      enableMinimize: false,
+      enableResolveCss: '^auto',
       enableResolveAsset: true,
-      enableBuildNodeLibrary: false,
 
-      emitHtml: false,
-      emitCss: this.isProduction,
+      emitHtml: true,
+      emitCss: false,
       emitPublic: true,
 
       title: null,
       publicPath: '/',
+      isNodeLibrary: false,
       libraryName: false,
-      postcss: 'auto',
       externals: [],
       define: {},
       skipCheckBabel: false,
-      mockServer: null,
+      mockServer: mockServer,
       eachPlugin: null
     }
 
+    // 解析options参数，完成多态
     if (Array.isArray(options)) {
       if (options.length === 1) {
         Object.assign(_options, options[0])
@@ -170,7 +188,8 @@ class Webpack5RecommendConfig {
     this.distPath = _options.distPath
     this.packageJSONFilePath = _options.packageJSONFilePath
     this.packageJSON = require(_options.packageJSONFilePath)
-    this.dependencies = Object.keys({ // 项目依赖库数组，用于判定包含什么框架
+    this.dependencies = Object.keys({
+      // 项目依赖库数组，用于判定包含什么框架
       ...this.packageJSON['devDependencies'],
       ...this.packageJSON['dependencies']
     })
@@ -179,36 +198,36 @@ class Webpack5RecommendConfig {
     this.isTsProject = _options.isTsProject
     this.isEntryJSX = _options.isEntryJSX
     this.scriptExt = _options.scriptExt
-    if (this.isEntryJSX === true || this.isEntryJSX === 'auto' && this.isInclude('react')) {
+    if (this.isEntryJSX === true || (this.isEntryJSX === 'auto' && this.isInclude('react'))) {
       this.scriptExt += 'x'
     }
     this.entryDefaultName = _options.entryDefaultName
     this.entryDefaultFileName = _options.entryDefaultFileName || `${this.entryDefaultName}${this.scriptExt}`
 
-    this.enableFriendly = _options.enableFriendly
-    this.enableProfile = _options.enableProfile
-    this.enableProxy = _options.enableProxy
-    this.enableMock = _options.enableMock
-    this.enableThread = _options.enableThread
-    this.enableHash = _options.enableHash
-    this.enableSplitChunk = _options.enableSplitChunk
-    this.enableBabel = _options.enableBabel
-    this.enableMinimize = _options.enableMinimize
-    this.enableResolveCss = _options.enableResolveCss
-    this.enableResolveAsset = _options.enableResolveAsset
-    this.enableBuildNodeLibrary = _options.enableBuildNodeLibrary
+    this.enableFriendly = this.autoVal(_options.enableFriendly)
+    this.enableProfile = this.autoVal(_options.enableProfile)
+    this.enableProxy = this.autoVal(_options.enableProxy)
+    this.enableMock = this.autoVal(_options.enableMock)
+    this.enableThread = this.autoVal(_options.enableThread, ['thread-loader'])
+    this.enableHash = this.autoVal(_options.enableHash)
+    this.enableSplitChunk = this.autoVal(_options.enableSplitChunk)
+    this.enableBabel = this.autoVal(_options.enableBabel)
+    this.enablePostcss = this.autoVal(_options.enablePostcss, ['postcss-loader', 'css-loader', 'style-loader'])
+    this.enableMinimize = this.autoVal(_options.enableMinimize)
+    this.enableResolveCss = this.autoVal(_options.enableResolveCss, ['css-loader', 'style-loader'])
+    this.enableResolveAsset = this.autoVal(_options.enableResolveAsset)
 
-    this.emitCss = _options.emitCss
+    this.emitCss = this.autoVal(_options.emitCss)
     this.emitHtml = _options.emitHtml
     this.emitPublic = _options.emitPublic
 
     this.title = _options.title || this.packageJSON['name'] || 'Webpack App'
     this.publicPath = _options.publicPath
+    this.isNodeLibrary = _options.isNodeLibrary
     this.libraryName = _options.libraryName
     if (this.libraryName === true) {
       this.libraryName = this.camelCase(this.packageJSON['name']) || 'library'
     }
-    this.postcss = _options.postcss
     this.externals = _options.externals
     this.define = _options.define
     this.skipCheckBabel = _options.skipCheckBabel
@@ -221,15 +240,18 @@ class Webpack5RecommendConfig {
      * @type {WebpackOptionsNormalized}
      */
     this._config = {}
-    this._webpack = this.require('webpack')
+    this._webpack = webpack
 
     if (this.isProduction) {
+      // 生产环境检查是否开启babel-loader
       this.checkEnableBabel()
     }
     if (!this.isTsProject && this.isInclude('react')) {
-      this.checkEnableBabel()
+      // 不是ts项目时包含了react检查是否开启babel-loader
+      this.checkEnableBabel(false)
     }
     if (this.enableBabel) {
+      // 启用react时检查是否需要完成react项目编译
       this.checkBabelCompileReact()
     }
   }
@@ -268,10 +290,7 @@ class Webpack5RecommendConfig {
    * @return {Webpack5RecommendConfig}
    */
   static newLibrary(env, argv, libraryName, genCallback) {
-    return new Webpack5RecommendConfig(
-      env, argv,
-      Webpack5RecommendConfig.genLibraryOptions(libraryName, genCallback)
-    )
+    return new Webpack5RecommendConfig(env, argv, Webpack5RecommendConfig.genLibraryOptions(libraryName, genCallback))
   }
 
   /**
@@ -284,7 +303,7 @@ class Webpack5RecommendConfig {
       options[0].enableResolveCss = false
       options[0].enableResolveAsset = false
       options[0].emitPublic = false
-      options[0].enableBuildNodeLibrary = true
+      options[0].isNodeLibrary = true
       if (typeof genCallback === 'function') {
         genCallback(options)
       }
@@ -300,10 +319,7 @@ class Webpack5RecommendConfig {
    * @return {Webpack5RecommendConfig}
    */
   static newNodeLibrary(env, argv, genCallback) {
-    return new Webpack5RecommendConfig(
-      env, argv,
-      Webpack5RecommendConfig.genNodeOptions(genCallback)
-    )
+    return new Webpack5RecommendConfig(env, argv, Webpack5RecommendConfig.genNodeOptions(genCallback))
   }
 
   /**
@@ -332,7 +348,8 @@ class Webpack5RecommendConfig {
    */
   static newReactLibrary(env, argv, libraryName, genCallback) {
     return new Webpack5RecommendConfig(
-      env, argv,
+      env,
+      argv,
       Webpack5RecommendConfig.genReactLibraryOptions(libraryName, genCallback)
     )
   }
@@ -354,7 +371,7 @@ class Webpack5RecommendConfig {
     this.buildRules()
     this.buildPlugins()
 
-    if (this.enableBuildNodeLibrary) {
+    if (this.isNodeLibrary) {
       this.rebuildNodeLibrary()
     }
 
@@ -405,7 +422,8 @@ class Webpack5RecommendConfig {
     }
 
     // https://webpack.js.org/configuration/output/#outputlibrary
-    if (this.libraryName !== false) { // true会被转换成自动名称，到不了这里
+    if (this.libraryName !== false) {
+      // true会被转换成自动名称，到不了这里
       this._config.output.globalObject = 'this'
       this._config.output.library = {
         name: this.libraryName, // 如果不想要名称可以设置null
@@ -552,7 +570,7 @@ class Webpack5RecommendConfig {
       Object.assign(this._config.optimization, {
         minimize: this.enableMinimize,
         minimizer: [
-          new (this.require('terser-webpack-plugin'))() //
+          new TerserWebpackPlugin() // 压缩器
         ]
       })
     }
@@ -718,12 +736,9 @@ class Webpack5RecommendConfig {
        * https://webpack.js.org/plugins/mini-css-extract-plugin/
        */
       this.pushPlugin(
-        'mini-css-extract-plugin',
-        [
-          {
-            filename: this.enableHash ? '[name].style.[chunkhash:8].css' : '[name].style.css'
-          }
-        ]
+        new MiniCssExtractPlugin({
+          filename: this.enableHash ? '[name].style.[chunkhash:8].css' : '[name].style.css'
+        })
       )
     }
 
@@ -747,10 +762,7 @@ class Webpack5RecommendConfig {
           }
           : false
       }
-      this.pushPlugin(
-        'html-webpack-plugin',
-        [htmWebpackPluginOptions]
-      )
+      this.pushPlugin(new HtmlWebpackPlugin(htmWebpackPluginOptions))
     }
 
     if (this.emitPublic && fs.existsSync(this.staticFolderPath)) {
@@ -759,17 +771,14 @@ class Webpack5RecommendConfig {
        * https://webpack.js.org/plugins/copy-webpack-plugin
        */
       this.pushPlugin(
-        'copy-webpack-plugin',
-        [
-          {
-            patterns: [
-              {
-                from: this.staticFolderPath,
-                to: '.'
-              }
-            ]
-          }
-        ]
+        new CopyWebpackPlugin({
+          patterns: [
+            {
+              from: this.staticFolderPath,
+              to: '.'
+            }
+          ]
+        })
       )
     }
 
@@ -780,32 +789,23 @@ class Webpack5RecommendConfig {
          * https://github.com/unjs/webpackbar
          */
         this.pushPlugin(
-          'webpackbar',
-          [
-            {
-              reporters: ['fancy', 'profile'],
-              profile: true
-            }
-          ]
+          new WebpackBar({
+            reporters: ['fancy', 'profile'],
+            profile: true
+          })
         )
       } else {
-        this.pushPlugin(
-          'webpackbar',
-          []
-        )
+        this.pushPlugin(new WebpackBar())
       }
     }
 
     if (this.enableFriendly && this.isStartSever) {
       this.pushPlugin(
-        '@soda/friendly-errors-webpack-plugin',
-        [
-          {
-            compilationSuccessInfo: {
-              messages: [`You application is running here http://localhost:${this._config.devServer.port}`]
-            }
+        new FriendlyErrorsWebpackPlugin({
+          compilationSuccessInfo: {
+            messages: [`You application is running here http://localhost:${this._config.devServer.port}`]
           }
-        ]
+        })
       )
     }
 
@@ -814,11 +814,7 @@ class Webpack5RecommendConfig {
        * 加载vue文件必须插件
        */
       const {VueLoaderPlugin} = this.require('vue-loader')
-      this.pushPlugin(
-        'VueLoaderPlugin',
-        VueLoaderPlugin,
-        []
-      )
+      this.pushPlugin('VueLoaderPlugin', VueLoaderPlugin, [])
     }
 
     /**
@@ -826,16 +822,16 @@ class Webpack5RecommendConfig {
      * https://webpack.js.org/plugins/define-plugin
      */
     if (this.isInclude('vue')) {
-      this.define = Object.assign({
-        __VUE_OPTIONS_API__: false,
-        __VUE_PROD_DEVTOOLS__: this.isDevelopment
-      }, this.define)
+      // https://github.com/vuejs/core/tree/main/packages/vue#bundler-build-feature-flags
+      this.define = Object.assign(
+        {
+          __VUE_OPTIONS_API__: false,
+          __VUE_PROD_DEVTOOLS__: this.isDevelopment
+        },
+        this.define
+      )
     }
-    this.pushPlugin(
-      '_webpack.DefinePlugin',
-      this._webpack.DefinePlugin,
-      [this.define]
-    )
+    this.pushPlugin('_webpack.DefinePlugin', this._webpack.DefinePlugin, [this.define])
 
     /**
      * 在监视模式下忽略指定的文件
@@ -845,15 +841,11 @@ class Webpack5RecommendConfig {
       let ignorePaths = []
       // https://github.com/TypeStrong/ts-loader#usage-with-webpack-watch
       ignorePaths.push(/\.js$/, /\.d\.ts$/)
-      this.pushPlugin(
-        '_webpack.WatchIgnorePlugin',
-        this._webpack.WatchIgnorePlugin,
-        [
-          {
-            paths: ignorePaths
-          }
-        ]
-      )
+      this.pushPlugin('_webpack.WatchIgnorePlugin', this._webpack.WatchIgnorePlugin, [
+        {
+          paths: ignorePaths
+        }
+      ])
     }
 
     return this
@@ -924,11 +916,34 @@ class Webpack5RecommendConfig {
     }
   }
 
+  /**
+   * 返回auto对应的值
+   * @param {AutoVal?} value
+   * @param {String[]} dependencies
+   * @return {Boolean}
+   */
+  autoVal(value, dependencies = []) {
+    if (value === 'auto') {
+      value = this.isProduction
+    } else if (value === '!auto') {
+      value = this.isDevelopment
+    } else if (value === '^auto') {
+      value = dependencies.every(this.isInclude.bind(this))
+    }
+    if (value && !dependencies.every(this.isInclude.bind(this))) {
+      throw TypeError('missing dependencies ' + dependencies)
+    }
+    return !!value
+  }
+
   camelCase(content) {
     if (!content) {
       return ''
     }
-    return content.split('/').slice(-1)[0].replace(/-(\w)/g, (_, $1) => $1.toUpperCase())
+    return content
+      .split('/')
+      .slice(-1)[0]
+      .replace(/-(\w)/g, (_, $1) => $1.toUpperCase())
   }
 
   /**
@@ -958,16 +973,21 @@ class Webpack5RecommendConfig {
       this.eachPlugin(plugin)
     }
 
-    this._config.plugins.push(new (plugin.constructor)(...plugin.args))
+    this._config.plugins.push(new plugin.constructor(...plugin.args))
   }
 
   isInclude(libraryName) {
     return this.dependencies.includes(libraryName)
   }
 
-  checkEnableBabel() {
+  checkEnableBabel(isWarn = true) {
     if (!this.skipCheckBabel && !this.enableBabel) {
-      throw TypeError('Please start Babel in the production environment to compile.')
+      const msg = 'Please start Babel in the production environment to compile.'
+      if (isWarn) {
+        console.warn('[WARN]-' + msg)
+      } else {
+        throw TypeError(msg)
+      }
     }
   }
 
@@ -1041,14 +1061,14 @@ class Webpack5RecommendConfig {
     let cssRuleLoaders = []
 
     if (this.emitCss) {
-      cssRuleLoaders.push(this.require('mini-css-extract-plugin').loader)
+      cssRuleLoaders.push(MiniCssExtractPlugin.loader)
     } else {
       cssRuleLoaders.push('style-loader')
     }
 
     cssRuleLoaders.push('css-loader')
 
-    if (this.postcss === true || this.postcss === 'auto' && this.isProduction && this.isInclude('postcss-loader')) {
+    if (this.enablePostcss === true) {
       cssRuleLoaders.push('postcss-loader')
     }
 
@@ -1117,8 +1137,7 @@ function wcf(options) {
   Object.assign(_options, options)
   return (env, argv) => {
     const {debug, buildOptions, buildConfigCallback} = _options
-    return new Webpack5RecommendConfig(env, argv, buildOptions)
-      .buildEnd(buildConfigCallback, debug)
+    return new Webpack5RecommendConfig(env, argv, buildOptions).buildEnd(buildConfigCallback, debug)
   }
 }
 

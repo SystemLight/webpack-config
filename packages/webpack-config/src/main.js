@@ -104,16 +104,15 @@ class Webpack5RecommendConfig {
   /**
    * webpack配置项：https://webpack.js.org/configuration/
    * 为什么不用Dll：https://github.com/facebook/create-react-app/pull/2710#issuecomment-378523967
-   * @param {any[]} env - webpack环境变量对象
-   * @param {Object} argv - 调用参数
-   * @param {'development' | 'production'} argv.mode
+   * @param {String?} mode - 模式
+   * @param {Boolean?} isStartSever - 是否启动服务器
    * @param {Webpack5RecommendConfigOptions[] | Webpack5RecommendConfigOptions?} options - 配置选项
    */
-  constructor(env, argv, options) {
-    this.mode = argv.mode || 'development'
+  constructor(mode, isStartSever, options) {
+    this.mode = mode || 'development'
     this.isProduction = this.mode === 'production'
     this.isDevelopment = !this.isProduction
-    this.isStartSever = !!env['WEBPACK_SERVE']
+    this.isStartSever = !!isStartSever
 
     const cwd = process.cwd()
     const isTsProject = fs.existsSync(path.resolve(cwd, 'tsconfig.json'))
@@ -282,15 +281,18 @@ class Webpack5RecommendConfig {
 
   /**
    * 创建Webpack5RecommendConfig
-   * @param {any[]} env
-   * @param {Object} argv
-   * @param {'development' | 'production'} argv.mode
+   * @param {String?} mode - 模式
+   * @param {Boolean?} isStartSever - 是否启动服务器
    * @param {LibraryName?} libraryName
    * @param {GenCallback?} genCallback
    * @return {Webpack5RecommendConfig}
    */
-  static newLibrary(env, argv, libraryName, genCallback) {
-    return new Webpack5RecommendConfig(env, argv, Webpack5RecommendConfig.genLibraryOptions(libraryName, genCallback))
+  static newLibrary(mode, isStartSever, libraryName, genCallback) {
+    return new Webpack5RecommendConfig(
+      mode,
+      isStartSever,
+      Webpack5RecommendConfig.genLibraryOptions(libraryName, genCallback)
+    )
   }
 
   /**
@@ -312,14 +314,13 @@ class Webpack5RecommendConfig {
 
   /**
    * 创建Webpack5RecommendConfig
-   * @param {any[]} env
-   * @param {Object} argv
-   * @param {'development' | 'production'} argv.mode
+   * @param {String?} mode - 模式
+   * @param {Boolean?} isStartSever - 是否启动服务器
    * @param {GenCallback?} genCallback
    * @return {Webpack5RecommendConfig}
    */
-  static newNodeLibrary(env, argv, genCallback) {
-    return new Webpack5RecommendConfig(env, argv, Webpack5RecommendConfig.genNodeOptions(genCallback))
+  static newNodeLibrary(mode, isStartSever, genCallback) {
+    return new Webpack5RecommendConfig(mode, isStartSever, Webpack5RecommendConfig.genNodeOptions(genCallback))
   }
 
   /**
@@ -339,17 +340,16 @@ class Webpack5RecommendConfig {
 
   /**
    * 创建Webpack5RecommendConfig
-   * @param {any[]} env
-   * @param {Object} argv
-   * @param {'development' | 'production'} argv.mode
+   * @param {String?} mode - 模式
+   * @param {Boolean?} isStartSever - 是否启动服务器
    * @param {LibraryName?} libraryName
    * @param {GenCallback?} genCallback
    * @return {Webpack5RecommendConfig}
    */
-  static newReactLibrary(env, argv, libraryName, genCallback) {
+  static newReactLibrary(mode, isStartSever, libraryName, genCallback) {
     return new Webpack5RecommendConfig(
-      env,
-      argv,
+      mode,
+      isStartSever,
       Webpack5RecommendConfig.genReactLibraryOptions(libraryName, genCallback)
     )
   }
@@ -673,12 +673,22 @@ class Webpack5RecommendConfig {
       }
 
       /**
-       * 添加sass解析
+       * 添加less解析
        */
       if (this.isInclude('less')) {
         this._config.module.rules.push({
           test: /\.less$/,
           use: this.getCssLoader('less')
+        })
+      }
+
+      /**
+       * 添加stylus解析
+       */
+      if (this.isInclude('stylus')) {
+        this._config.module.rules.push({
+          test: /\.styl$/,
+          use: this.getCssLoader('stylus')
         })
       }
     }
@@ -1079,6 +1089,8 @@ class Webpack5RecommendConfig {
       case 'less':
         cssRuleLoaders.push('less-loader')
         break
+      case 'stylus':
+        cssRuleLoaders.push('stylus-loader')
     }
 
     return cssRuleLoaders
@@ -1136,8 +1148,10 @@ function wcf(options) {
   const _options = {debug: false, buildOptions: {}, buildConfigCallback: null}
   Object.assign(_options, options)
   return (env, argv) => {
+    const mode = argv.mode || 'development'
+    const isStartSever = !!env['WEBPACK_SERVE']
     const {debug, buildOptions, buildConfigCallback} = _options
-    return new Webpack5RecommendConfig(env, argv, buildOptions).buildEnd(buildConfigCallback, debug)
+    return new Webpack5RecommendConfig(mode, isStartSever, buildOptions).buildEnd(buildConfigCallback, debug)
   }
 }
 

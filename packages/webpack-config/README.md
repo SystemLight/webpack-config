@@ -4,22 +4,23 @@
 
 > Webpack smart configuration.
 
-## 支持环境
+## Support
 
 - [x] webpack5
 - [x] babel
 - [x] mockjs
 - [x] typescript
 - [x] css
-- [x] less
-- [x] sass
 - [x] postcss
-- [x] react18
-- [x] vue3
+- [x] sass
+- [x] less
+- [x] stylus
+- [x] react
+- [x] vue
 
 ## Usage
 
-安装
+Install
 
 ```bash
 npm i @systemlight/webpack-config webpack webpack-cli -D
@@ -42,7 +43,7 @@ module.exports = wcf()
 ```js
 const {webpack5RecommendConfig} = require('@systemlight/webpack-config')
 
-module.exports = (env, argv) => new webpack5RecommendConfig(env, argv)
+module.exports = (env, argv) => new webpack5RecommendConfig(argv.mode || 'development', !!env['WEBPACK_SERVE'])
   .build(function (config) {
     if (this.isDevelopment) {
       // 修改内置的config内容，设置值内容会被自动merge
@@ -58,7 +59,7 @@ module.exports = (env, argv) => new webpack5RecommendConfig(env, argv)
 
 ```javascript
 const {wcf} = require('@systemlight/webpack-config');
-const AgreedRoutingPlugin = require('./agreed-route-plugin');
+const WalkWebpackPlugin = require('@systemlight/walk-webpack-plugin');
 
 module.exports = wcf({
   buildOptions: {
@@ -72,7 +73,9 @@ module.exports = wcf({
   },
   buildConfigCallback(config) {
     this.rebuildDexterity(false)
-    config.plugins.push(new AgreedRoutingPlugin())
+    config.value={
+        plugins:[new WalkWebpackPlugin()]
+    }
   }
 })
 ```
@@ -93,10 +96,10 @@ in `package.json`
 
 > 创建配置实例对象
 
-- new Webpack5RecommendConfig(env,argv,options) : 创建默认web项目，自检vue或者react
-- Webpack5RecommendConfig.newLibrary(env, argv, libraryName, genCallback) : 创建类库项目
-- Webpack5RecommendConfig.newReactLibrary(env, argv, libraryName, genCallback) : 创建react库项目
-- Webpack5RecommendConfig.newNodeLibrary(env, argv, buildCallback) : 创建node库项目
+- new Webpack5RecommendConfig(mode, isStartSever, options) : 创建默认web项目，自检vue或者react
+- Webpack5RecommendConfig.newLibrary(mode, isStartSever, libraryName, genCallback) : 创建类库项目
+- Webpack5RecommendConfig.newReactLibrary(mode, isStartSever, libraryName, genCallback) : 创建react库项目
+- Webpack5RecommendConfig.newNodeLibrary(mode, isStartSever, buildCallback) : 创建node库项目
 
 > 实例对象方法
 
@@ -209,7 +212,7 @@ in `package.json`
 ```javascript
 const {Webpack5RecommendConfig: WebpackConfig} = require('@systemlight/webpack-config');
 
-module.exports = (env, argv) => new WebpackConfig(env, argv, {
+module.exports = (env, argv) => new WebpackConfig(argv.mode || 'development', !!env['WEBPACK_SERVE'], {
   define: {
     __VUE_OPTIONS_API__: true
   }
@@ -240,11 +243,9 @@ module.exports = mocks
 
 ```javascript
 const {Webpack5RecommendConfig} = require('@systemlight/webpack-config')
-const {mockServer} = require('@systemlight/webpack-config-mockserver')
 
-module.exports = (env, argv) => new webpack5RecommendConfig(env, argv, {
-  enableMock: true,
-  mockServer: mockServer
+module.exports = (env, argv) => new webpack5RecommendConfig(argv.mode || 'development', !!env['WEBPACK_SERVE'], {
+  enableMock: true
 })
   .build()
   .toConfig()

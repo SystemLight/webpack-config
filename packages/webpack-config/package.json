@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "5.6.0",
+  "version": "5.7.0",
   "publishConfig": {
     "access": "public"
   },
@@ -48,6 +48,9 @@
     "less-loader": {
       "optional": true
     },
+    "stylus-loader": {
+      "optional": true
+    },
     "thread-loader": {
       "optional": true
     },
@@ -68,6 +71,7 @@
     "postcss-loader": "*",
     "sass-loader": "*",
     "less-loader": "*",
+    "stylus-loader": "*",
     "thread-loader": "*",
     "babel-loader": "*",
     "ts-loader": "*",

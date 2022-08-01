@@ -1,20 +1,31 @@
 const {wcf} = require('@systemlight/webpack-config')
-const WalkWebpackPlugin = require('@systemlight/walk-webpack-plugin')
+const AutoRouteWebpackPlugin = require('@systemlight/auto-route-webpack-plugin')
 
 module.exports = wcf({
   buildOptions: {
-    enableMock: true
+    enableMock: true,
+    emitHtml: true,
+    enableFriendly: false
   },
   buildConfigCallback(config) {
     config.value = {
       devServer: {
         open: false
       },
+      module: {
+        rules: [
+          {
+            test: /routes\/index\.js$/,
+            exclude: /node_modules/,
+            use: [AutoRouteWebpackPlugin.loader]
+          }
+        ]
+      },
       plugins: [
-        new WalkWebpackPlugin({
+        new AutoRouteWebpackPlugin({
           targetPath: './src/views',
-          publicPath: '/',
-          importPath: '@/views'
+          importPath: '@/views',
+          routePresetType: 'vue'
         })
       ]
     }

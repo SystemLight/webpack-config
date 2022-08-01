@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "properties": {
+    "targetPath": {
+      "type": "string"
+    },
+    "importPath": {
+      "type": "string"
+    },
+    "publicPath": {
+      "type": "string"
+    },
+    "ignores": {
+      "type": "array"
+    },
+    "ignoreFiles": {
+      "type": "array"
+    },
+    "ignoreFolders": {
+      "type": "array"
+    },
+    "renderRoute": {
+      "type": "object"
+    },
+    "childrenName": {
+      "type": "string"
+    },
+    "routePresetType": {
+      "type": "string",
+      "pattern": "(vue)"
+    }
+  },
+  "required": [
+    "targetPath",
+    "importPath"
+  ],
+  "additionalProperties": false
+}

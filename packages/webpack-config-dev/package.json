@@ -10,7 +10,7 @@
   "author": "SystemLight",
   "license": "MIT",
   "devDependencies": {
-    "@systemlight/walk-webpack-plugin": "workspace:^1.0.0",
+    "@systemlight/auto-route-webpack-plugin": "workspace:^1.0.0",
     "@systemlight/webpack-config": "workspace:^5.7.0",
     "css-loader": "^6.7.1",
     "style-loader": "^3.3.1",

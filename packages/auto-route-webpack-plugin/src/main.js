@@ -107,13 +107,8 @@ class FileInfo {
   }
 }
 
-class AutoRouteWebpackPlugin {
-  static loader = require.resolve('./loader.js')
-
+class AutoRoute {
   constructor(options) {
-    this.id = this.constructor.name
-
-    validate(schema, options, {name: this.id})
     let {
       targetPath,
       importPath,
@@ -284,15 +279,49 @@ class AutoRouteWebpackPlugin {
   genRoutesStr() {
     return this._routesRender(this.genRoutes(this.getFileInfos()))
   }
+}
+
+class AutoRouteWebpackPlugin {
+  static loader = require.resolve('./loader.js')
+
+  constructor(options) {
+    this.id = this.constructor.name
+    validate(schema, options, {name: this.id})
+    this._loader = {
+      test: options.loaderTest,
+      options: options.loaderOptions
+    }
+    this._autoRoute = new AutoRoute(options)
+  }
 
   /**
    * 触发插件方法
    * @param {Compiler} compiler
    */
   apply(compiler) {
+    const {module} = compiler.options
+
+    const initLoaderRule = {
+      test: this._loader.test,
+      exclude: /node_modules/,
+      use: [
+        {
+          loader: AutoRouteWebpackPlugin.loader,
+          options: this._loader.options
+        }
+      ]
+    }
+
+    if (module.rules) {
+      module.rules.push(initLoaderRule)
+    } else {
+      compiler.options.module.rules = [initLoaderRule]
+    }
+
     const normalModule = compiler.webpack.NormalModule
+
     compiler.hooks.thisCompilation.tap(this.id, (compilation) => {
-      const routesStr = this.genRoutesStr()
+      const routesStr = this._autoRoute.genRoutesStr()
       normalModule.getCompilationHooks(compilation).loader.tap(this.id, (loaderContext) => {
         loaderContext[NS] = routesStr
       })
@@ -301,6 +330,8 @@ class AutoRouteWebpackPlugin {
 }
 
 module.exports = {
+  FileInfo,
+  AutoRoute,
   AutoRouteWebpackPlugin,
   vueRoutesRender
 }

@@ -12,26 +12,11 @@ module.exports = wcf({
       devServer: {
         open: false
       },
-      module: {
-        rules: [
-          {
-            test: /routes\/index\.js$/,
-            exclude: /node_modules/,
-            use: [
-              {
-                loader: AutoRouteWebpackPlugin.loader,
-                options: {
-                  debug: false
-                }
-              }
-            ]
-          }
-        ]
-      },
       plugins: [
         new AutoRouteWebpackPlugin({
           targetPath: './src/views',
           importPath: '@/views',
+          loaderTest: /routes\/index\.js$/,
           routesRender: vueRoutesRender
         })
       ]

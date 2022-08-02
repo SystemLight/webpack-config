@@ -1,5 +1,5 @@
 const {NS, routesTag, routesTagMatch} = require('./constant')
-const schema = require('./loader-schema.json')
+const schema = require('./schema.json').definitions.LoaderOptions
 
 function loader(source) {
   const loaderContext = this

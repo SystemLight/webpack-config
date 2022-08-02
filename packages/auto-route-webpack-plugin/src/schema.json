@@ -1,32 +1,73 @@
 {
+  "definitions": {
+    "LoaderOptions": {
+      "description": "loader options",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "debug": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "description": "auto-route-webpack-plugin options",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "targetPath": {
+      "description": "扫描目录路径",
       "type": "string"
     },
     "importPath": {
+      "description": "导入的前缀路径",
       "type": "string"
     },
     "publicPath": {
+      "description": "目录的访问前缀",
       "type": "string"
     },
     "ignores": {
-      "type": "array"
+      "description": "通用忽略正则表达式数组",
+      "type": "array",
+      "items": {
+        "instanceof": "RegExp",
+        "tsType": "RegExp"
+      }
     },
     "ignoreFiles": {
-      "type": "array"
+      "description": "文件忽略正则表达式数组",
+      "type": "array",
+      "items": {
+        "instanceof": "RegExp",
+        "tsType": "RegExp"
+      }
     },
     "ignoreFolders": {
-      "type": "array"
+      "description": "文件夹忽略正则表达式数组",
+      "type": "array",
+      "items": {
+        "instanceof": "RegExp",
+        "tsType": "RegExp"
+      }
     },
     "routesRender": {
+      "description": "渲染路由函数",
       "instanceof": "Function",
       "tsType": "((routes:any) => string)"
+    },
+    "loaderTest": {
+      "description": "查找路由生成注入位置",
+      "instanceof": "RegExp",
+      "tsType": "RegExp"
+    },
+    "loaderOptions": {
+      "$ref": "#/definitions/LoaderOptions"
     }
   },
   "required": [
     "targetPath",
-    "importPath"
+    "importPath",
+    "loaderTest"
   ]
 }

@@ -44,20 +44,12 @@ const {AutoRouteWebpackPlugin, vueRoutesRender} = require('@systemlight/auto-rou
 
 module.exports = {
     ...
-      
-    module: {
-      rules: [
-        {
-          test: /routes\/index\.js$/,
-          exclude: /node_modules/,
-          use: [AutoRouteWebpackPlugin.loader]
-        }
-      ]
-    },
+
     plugins: [
       new AutoRouteWebpackPlugin({
         targetPath: './src/views',
         importPath: '@/views',
+        loaderTest: /routes\/index\.js$/,
         routesRender: vueRoutesRender
       })
     ]
@@ -73,19 +65,11 @@ const {AutoRouteWebpackPlugin, vueRoutesRender} = require('@systemlight/auto-rou
 
 {
   configureWebpack:{
-    module: {
-      rules: [
-        {
-          test: /routes\/index\.js$/,
-          exclude: /node_modules/,
-          use: [AutoRouteWebpackPlugin.loader]
-        }
-      ]
-    },
     plugins: [
       new AutoRouteWebpackPlugin({
         targetPath: './src/views',
         importPath: '@/views',
+        loaderTest: /routes\/index\.js$/,
         routesRender: vueRoutesRender
       })
     ]
@@ -123,3 +107,4 @@ export default router
 - ignoreFiles：文件忽略正则表达式数组
 - ignoreFolders：文件夹忽略正则表达式数组
 - renderRoute：渲染路由函数
+- loaderTest：用于路由注入位置，文件内需要包含`// @auto-routes`标记用来替换生成的路由

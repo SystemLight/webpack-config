@@ -6,10 +6,20 @@ const {validate} = require('schema-utils')
 const stringifyObject = require('stringify-object')
 
 const {NS} = require('./constant')
-const {vueRouteRender} = require('./vue-route-render')
+const vueRoutesRender = require('./vue-routes-render')
 const schema = require('./schema.json')
 
 const nanoid = customAlphabet('1234567890abcdef', 10)
+
+/**
+ * 基础路由标准
+ * @typedef Routes
+ * @property {String} name
+ * @property {Boolean} exact
+ * @property {String} path
+ * @property {String} component
+ * @property {Routes[]?} routes
+ */
 
 class FileInfo {
   static _dynamicRouteMatchG = /\[((.*?)\$?)]/g
@@ -111,9 +121,7 @@ class AutoRouteWebpackPlugin {
       ignores = [],
       ignoreFiles = [],
       ignoreFolders = [],
-      renderRoute = null,
-      childrenName = 'children',
-      routePresetType = false
+      routesRender = null
     } = options
 
     // 正则可视化：https://tooltt.com/regulex/
@@ -137,18 +145,8 @@ class AutoRouteWebpackPlugin {
     this.ignoreFolders = [...[...defaultIgnores, ...ignores], ...[...defaultIgnoreFolders, ...ignoreFolders]]
 
     this._layout = '_layout'
-    this._renderRoute = renderRoute
-    if (typeof this._renderRoute !== 'function') {
-      switch (routePresetType) {
-        case 'vue':
-          this._renderRoute = vueRouteRender
-          break
-        default:
-          this._renderRoute = (v) => v
-      }
-    }
-
-    this._childrenName = childrenName
+    this._childrenName = 'routes'
+    this._routesRender = routesRender || ((routes) => stringifyObject(routes, {indent: '  '}))
   }
 
   getFileInfos() {
@@ -227,15 +225,10 @@ class AutoRouteWebpackPlugin {
     }
     let parentPath = info.getParentPath()
     return {
-      ...this._renderRoute(
-        {
-          name: name,
-          exact: exact,
-          path: this.getUrl(info, parentPath),
-          component: this.getImport(info, parentPath)
-        },
-        info
-      ),
+      name: name,
+      exact: exact,
+      path: this.getUrl(info, parentPath),
+      component: this.getImport(info, parentPath),
       [this._childrenName]: []
     }
   }
@@ -289,7 +282,7 @@ class AutoRouteWebpackPlugin {
   }
 
   genRoutesStr() {
-    return stringifyObject(this.genRoutes(this.getFileInfos()), {indent: '  '}).replace(/^\[/, '').replace(/]$/, '')
+    return this._routesRender(this.genRoutes(this.getFileInfos()))
   }
 
   /**
@@ -307,4 +300,7 @@ class AutoRouteWebpackPlugin {
   }
 }
 
-module.exports = AutoRouteWebpackPlugin
+module.exports = {
+  AutoRouteWebpackPlugin,
+  vueRoutesRender
+}

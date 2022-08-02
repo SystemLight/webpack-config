@@ -1,5 +1,5 @@
 const routes = [
-  // @auto-route
+  // @auto-routes
 ]
 
 export default routes

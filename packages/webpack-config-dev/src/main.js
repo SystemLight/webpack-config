@@ -1,10 +1,9 @@
 import axios from 'axios'
 import './style.styl'
 
-import route from './routes/index'
+import routes from './routes'
 
-console.log('12333555')
-console.log(route)
 axios.get('/api/demo').then(({data}) => {
   console.log('hello', data)
+  console.log(routes)
 })

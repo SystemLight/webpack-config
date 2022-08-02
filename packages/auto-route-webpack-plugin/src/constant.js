@@ -1,5 +1,5 @@
 module.exports = {
   NS: 'AutoRouteWebpackPlugin.loader',
-  routesTag: '@auto-route',
-  routesTagMatch: /@auto-route/g
+  routesTag: '@auto-routes',
+  routesTagMatch: /@auto-routes/g
 }

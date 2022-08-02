@@ -32,17 +32,46 @@ src/pages/users/[id]/settings.tsx 会成为 /users/:id/settings
 
 ### 嵌套路由
 
-// TODO: 
+约定目录下有 _layout.tsx 时会生成嵌套路由，以 _layout.tsx 为该目录的 layout
 
 ## 使用方法
 
+- 配置webpack
+
+```javascript
+// 内置了一个vue路由渲染器
+const {AutoRouteWebpackPlugin, vueRoutesRender} = require('@systemlight/auto-route-webpack-plugin')
+
+module.exports = {
+    ...
+      
+    module: {
+      rules: [
+        {
+          test: /routes\/index\.js$/,
+          exclude: /node_modules/,
+          use: [AutoRouteWebpackPlugin.loader]
+        }
+      ]
+    },
+    plugins: [
+      new AutoRouteWebpackPlugin({
+        targetPath: './src/views',
+        importPath: '@/views',
+        routesRender: vueRoutesRender
+      })
+    ]
+
+  ...
+}
+```
+
 ## 配置参数
-targetPath,
-importPath,
-publicPath = '/',
-ignores = [],
-ignoreFiles = [],
-ignoreFolders = [],
-renderRoute = null,
-childrenName = 'children',
-routePresetType = false
+
+- targetPath：扫描文件的路径，根据此目录下的文件生成路由
+- importPath：导入的前缀路径，如@/views
+- publicPath：目录的访问前缀
+- ignores：通用忽略正则表达式数组
+- ignoreFiles：文件忽略正则表达式数组
+- ignoreFolders：文件夹忽略正则表达式数组
+- renderRoute：渲染路由函数

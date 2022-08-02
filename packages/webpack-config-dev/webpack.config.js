@@ -1,11 +1,11 @@
 const {wcf} = require('@systemlight/webpack-config')
-const AutoRouteWebpackPlugin = require('@systemlight/auto-route-webpack-plugin')
+const {AutoRouteWebpackPlugin, vueRoutesRender} = require('@systemlight/auto-route-webpack-plugin')
 
 module.exports = wcf({
   buildOptions: {
     enableMock: true,
     emitHtml: true,
-    enableFriendly: false
+    enableFriendly: true
   },
   buildConfigCallback(config) {
     config.value = {
@@ -25,7 +25,7 @@ module.exports = wcf({
         new AutoRouteWebpackPlugin({
           targetPath: './src/views',
           importPath: '@/views',
-          routePresetType: 'vue'
+          routesRender: vueRoutesRender
         })
       ]
     }

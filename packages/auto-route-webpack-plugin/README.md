@@ -66,7 +66,34 @@ module.exports = {
 }
 ```
 
-- routes 文件
+- 配置vue.config.js
+
+```javascript
+const {AutoRouteWebpackPlugin, vueRoutesRender} = require('@systemlight/auto-route-webpack-plugin')
+
+{
+  configureWebpack:{
+    module: {
+      rules: [
+        {
+          test: /routes\/index\.js$/,
+          exclude: /node_modules/,
+          use: [AutoRouteWebpackPlugin.loader]
+        }
+      ]
+    },
+    plugins: [
+      new AutoRouteWebpackPlugin({
+        targetPath: './src/views',
+        importPath: '@/views',
+        routesRender: vueRoutesRender
+      })
+    ]
+  }
+}
+```
+
+- routes 文件添加标记
 
 ```javascript
 // https://v3.router.vuejs.org/zh/api/

@@ -13,7 +13,7 @@ function loadRoutes(routes) {
     routesStr += `{
       name: '${route.name}',
       path: '${route.path}',
-      component: require('${route.component}'),
+      component: require('${route.component}').default,
       children: ${loadRoutes(route.routes)}
     },`
   }

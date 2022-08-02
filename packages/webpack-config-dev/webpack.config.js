@@ -17,7 +17,14 @@ module.exports = wcf({
           {
             test: /routes\/index\.js$/,
             exclude: /node_modules/,
-            use: [AutoRouteWebpackPlugin.loader]
+            use: [
+              {
+                loader: AutoRouteWebpackPlugin.loader,
+                options: {
+                  debug: false
+                }
+              }
+            ]
           }
         ]
       },

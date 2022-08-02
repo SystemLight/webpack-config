@@ -66,6 +66,27 @@ module.exports = {
 }
 ```
 
+- routes 文件
+
+```javascript
+// https://v3.router.vuejs.org/zh/api/
+const router = new VueRouter({
+  base: '/',
+  mode: 'history',
+  routes: [
+    // @auto-routes
+    {
+      name: '404',
+      path: '/:pathMatch(.*)',
+      alias: '/404',
+      component: Code404
+    }
+  ]
+})
+
+export default router
+```
+
 ## 配置参数
 
 - targetPath：扫描文件的路径，根据此目录下的文件生成路由

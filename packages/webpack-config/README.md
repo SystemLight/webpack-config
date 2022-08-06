@@ -20,7 +20,7 @@
 
 ## Usage
 
-Install
+### Install
 
 ```bash
 npm i @systemlight/webpack-config webpack webpack-cli -D
@@ -29,6 +29,8 @@ yarn add @systemlight/webpack-config webpack webpack-cli -D
 or
 pnpm add @systemlight/webpack-config webpack webpack-cli -D
 ```
+
+### 示例
 
 in `webpack.config.js`
 
@@ -94,20 +96,20 @@ in `package.json`
 
 ### API
 
-> 创建配置实例对象
+#### 创建配置实例对象
 
 - new Webpack5RecommendConfig(mode, isStartSever, options) : 创建默认web项目，自检vue或者react
 - Webpack5RecommendConfig.newLibrary(mode, isStartSever, libraryName, genCallback) : 创建类库项目
 - Webpack5RecommendConfig.newReactLibrary(mode, isStartSever, libraryName, genCallback) : 创建react库项目
 - Webpack5RecommendConfig.newNodeLibrary(mode, isStartSever, buildCallback) : 创建node库项目
 
-> 实例对象方法
+#### 实例对象方法
 
 - build(buildCallback) : 执行构建方法，该方法会执行多个分块构建，接收buildCallback回调可以对webpack配置对象进行细节修改
 - toConfig(debug) : 生成webpack配置对象并返回
 - buildEnd() : 合并上面两个接口操作，返回配置数据
 
-> Types
+#### Types
 
 ```javascript
 /**
@@ -199,13 +201,15 @@ in `package.json`
  */
 ```
 
-### QA:
+## QA:
 
-- 如何关闭HTML文件弹出？
+如何关闭HTML文件弹出？
 
-默认会读取src/index.ejs文件作为模板，如果存在的话，想要关闭html文件弹出可以配置`emitHtml:false`
+> 默认会读取src/index.ejs文件作为模板，如果存在的话，想要关闭html文件弹出可以配置`emitHtml:false`
 
-- 为什么使用vue时候options API不起效果？
+---
+
+为什么使用vue时候options API不起效果？
 
 > webpack5RecommendConfig保持现代化编程只支持vue3并且默认禁用optionsAPI，启用方法如下：
 
@@ -221,15 +225,15 @@ module.exports = (env, argv) => new WebpackConfig(argv.mode || 'development', !!
 
 ---
 
-- 为什么安装webpack-config还要安装一堆插件？
+为什么安装webpack-config还要安装一堆插件？
 
 > webpack-config只是为了更方便智能的生成webpack配置，所以插件版本需要用户自己安装和配置，webpack-config会自动识别并生成配置
 
 ---
 
-- 如何配置mock服务？
+如何配置mock服务？
 
-`mock/index.js`
+In `mock/index.js`
 
 ```javascript
 const mocks = [
@@ -239,7 +243,7 @@ const mocks = [
 module.exports = mocks
 ```
 
-`webpack.config.js`
+In `webpack.config.js`
 
 ```javascript
 const {Webpack5RecommendConfig} = require('@systemlight/webpack-config')

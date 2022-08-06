@@ -4,9 +4,11 @@
 
 > Webpack configure mock server middleware.
 
-### Usage
+## Usage
 
-- `mock/index.js`
+### 示例
+
+In `mock/index.js`
 
 ```javascript
 const mocks = [
@@ -16,7 +18,7 @@ const mocks = [
 module.exports = mocks
 ```
 
-- `webpack.config.js`
+In `webpack.config.js`
 
 ```javascript
 const webpack5RecommendConfig = require('@systemlight/webpack-config')

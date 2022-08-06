@@ -19,7 +19,7 @@
 
 ### 动态路由
 
-- 约定 [] 包裹的文件或文件夹为动态路由。
+约定 [] 包裹的文件或文件夹为动态路由。
 
 比如：
 
@@ -28,7 +28,7 @@ src/pages/users/[id].tsx 会成为 /users/:id
 src/pages/users/[id]/settings.tsx 会成为 /users/:id/settings
 ```
 
-- 约定 [ $] 包裹的文件或文件夹为动态可选路由
+约定 [ $] 包裹的文件或文件夹为动态可选路由
 
 ### 嵌套路由
 
@@ -36,7 +36,7 @@ src/pages/users/[id]/settings.tsx 会成为 /users/:id/settings
 
 ## 使用方法
 
-- 配置webpack
+配置webpack
 
 ```javascript
 // 内置了一个vue路由渲染器
@@ -58,7 +58,7 @@ module.exports = {
 }
 ```
 
-- 配置vue.config.js
+配置vue.config.js
 
 ```javascript
 const {AutoRouteWebpackPlugin, vueRoutesRender} = require('@systemlight/auto-route-webpack-plugin')
@@ -77,7 +77,7 @@ const {AutoRouteWebpackPlugin, vueRoutesRender} = require('@systemlight/auto-rou
 }
 ```
 
-- routes 文件添加标记
+routes 文件添加标记
 
 ```javascript
 // https://v3.router.vuejs.org/zh/api/

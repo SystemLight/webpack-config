@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "prepare": "husky install",
-    "lint:prettier": "prettier -w \"packages/**/*.js\"",
-    "lint:eslint-check": "eslint --ext .js packages/*/src/",
-    "lint:eslint": "eslint --fix --ext .js packages/*/src/",
+    "lint:prettier": "prettier -w \"packages/**/*.{vue,js,jsx,ts,tsx}\"",
+    "lint:eslint-check": "eslint --ext vue,js,jsx,ts,tsx \"packages/*/src/**.{vue,js,jsx,ts,tsx}\"",
+    "lint:eslint": "eslint --fix --ext vue,js,jsx,ts,tsx \"packages/*/src/**.{vue,js,jsx,ts,tsx}\"",
     "dev:server": "pnpm -C packages/webpack-config-dev serve"
   },
   "workspaces": [
@@ -27,14 +27,14 @@
   },
   "packageManager": "pnpm@7.7.1",
   "devDependencies": {
-    "@babel/core": "^7.18.9",
-    "@babel/eslint-parser": "^7.18.9",
-    "@babel/preset-env": "^7.18.9",
     "@commitlint/config-conventional": "^17.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "@typescript-eslint/parser": "^5.32.0",
     "commitlint": "^17.0.3",
     "eslint": "^8.20.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4"
   }
 }

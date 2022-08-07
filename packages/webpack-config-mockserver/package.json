@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config-mockserver",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -34,7 +34,7 @@
   "engines": {
     "node": ">=16.15.0"
   },
-  "packageManager": "pnpm@7.8.0",
+  "packageManager": "pnpm@7.9.0",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.4",

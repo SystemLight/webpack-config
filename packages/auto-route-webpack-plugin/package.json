@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/auto-route-webpack-plugin",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -18,7 +18,8 @@
     "generate routes"
   ],
   "description": "Webpack plug-in that traverses the directory to generate information.",
-  "main": "dist/main.ts",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
   "files": [
     "dist/"
   ],

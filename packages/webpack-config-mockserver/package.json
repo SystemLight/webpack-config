@@ -16,6 +16,7 @@
     "@systemlight/webpack-config"
   ],
   "description": "webpack configure mock server middleware.",
+  "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "files": [
     "dist/"

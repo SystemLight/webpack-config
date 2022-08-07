@@ -5,6 +5,7 @@
     "access": "public"
   },
   "scripts": {
+    "prepublish": "pnpm run build",
     "dev": "ts-node src/index.ts",
     "build": "rollup -c"
   },

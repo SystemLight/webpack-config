@@ -1,8 +1,12 @@
 {
   "name": "@systemlight/auto-route-webpack-plugin",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "prepublish": "pnpm run build",
+    "build": "rollup -c"
   },
   "keywords": [
     "webpack",
@@ -14,9 +18,9 @@
     "generate routes"
   ],
   "description": "Webpack plug-in that traverses the directory to generate information.",
-  "main": "src/main.js",
+  "main": "dist/main.ts",
   "files": [
-    "src/"
+    "dist/"
   ],
   "author": "SystemLighht",
   "license": "MIT",
@@ -31,10 +35,18 @@
   "engines": {
     "node": ">=16.15.0"
   },
+  "packageManager": "pnpm@7.8.0",
   "peerDependencies": {
     "webpack": "^5.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.4",
+    "@types/node": "^18.6.4",
+    "del": "6.1.1",
+    "rollup": "^2.77.2",
+    "typescript": "^4.7.4",
     "webpack": "^5.74.0"
   },
   "dependencies": {

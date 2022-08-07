@@ -5,6 +5,7 @@ importers:
   .:
     specifiers:
       '@commitlint/config-conventional': ^17.0.3
+      '@systemlight/fabric': workspace:^5.0.0
       '@typescript-eslint/eslint-plugin': ^5.32.0
       '@typescript-eslint/parser': ^5.32.0
       commitlint: ^17.0.3
@@ -15,6 +16,7 @@ importers:
       typescript: ^4.7.4
     devDependencies:
       '@commitlint/config-conventional': 17.0.3
+      '@systemlight/fabric': link:packages/fabric
       '@typescript-eslint/eslint-plugin': 5.32.0_u54i2zwnyr77bua47cradpdvoe
       '@typescript-eslint/parser': 5.32.0_he2ccbldppg44uulnyq4rwocfa
       commitlint: 17.0.3

@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "prepare": "husky install",
-    "lint:prettier": "prettier -w \"packages/**/*.{vue,js,jsx,ts,tsx}\"",
-    "lint:eslint-check": "eslint --ext vue,js,jsx,ts,tsx \"packages/*/src/**.{vue,js,jsx,ts,tsx}\"",
-    "lint:eslint": "eslint --fix --ext vue,js,jsx,ts,tsx \"packages/*/src/**.{vue,js,jsx,ts,tsx}\"",
+    "lint:prettier": "prettier -w \"packages/**/*.ts\"",
+    "lint:eslint-check": "eslint --ext ts \"packages/*/src/**.ts\"",
+    "lint:eslint": "eslint --fix --ext ts \"packages/*/src/**.ts\"",
     "dev:server": "pnpm -C packages/webpack-config-dev serve"
   },
   "workspaces": [
@@ -28,6 +28,7 @@
   "packageManager": "pnpm@7.7.1",
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.3",
+    "@systemlight/fabric": "workspace:^5.1.0",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
     "commitlint": "^17.0.3",

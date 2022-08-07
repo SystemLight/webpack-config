@@ -7,7 +7,6 @@ import chalk from 'chalk'
 let {version} = require('../package.json')
 
 function copyDotFile(filename) {
-  console.log(filename)
   copyFileSync(resolve(__dirname, 'ignore', filename), `./.${filename}`)
 }
 
@@ -51,6 +50,36 @@ function initGit() {
   copyDotFile('gitignore')
 }
 
+function init(type) {
+  if (!type) {
+    initPrettier()
+    console.log(`${chalk.bgCyan.black('prettier')} 初始化完毕`)
+
+    initEslint()
+    console.log(`${chalk.bgCyan.black('eslint')} 初始化完毕`)
+
+    initStylelint()
+    console.log(`${chalk.bgCyan.black('stylelint')} 初始化完毕`)
+    return
+  }
+
+  switch (type) {
+    case 'prettier':
+      initPrettier()
+      break
+    case 'eslint':
+      initEslint()
+      break
+    case 'stylelint':
+      initStylelint()
+      break
+    case 'git':
+      initGit()
+      break
+  }
+  console.log(`${chalk.bgCyan.black(type)} 初始化完毕`)
+}
+
 program
   .name('@systemlight/fabric')
   .usage('fabric init [--type,-t] [initType]')
@@ -61,36 +90,17 @@ program
   .command('init')
   .description('初始化配置文件')
   .addOption(
-    new CommanderOption('-t, --type [initType]', '选择生成文件类型').choices(['prettier', 'eslint', 'stylelint', 'git'])
+    new CommanderOption('-t, --type [initType...]', '选择生成文件类型').choices([
+      'prettier',
+      'eslint',
+      'stylelint',
+      'git'
+    ])
   )
   .action(({type}) => {
-    if (!type) {
-      initPrettier()
-      console.log(`${chalk.bgCyan.black('prettier')} 初始化完毕`)
-
-      initEslint()
-      console.log(`${chalk.bgCyan.black('eslint')} 初始化完毕`)
-
-      initStylelint()
-      console.log(`${chalk.bgCyan.black('stylelint')} 初始化完毕`)
-      return
-    }
-
-    switch (type) {
-      case 'prettier':
-        initPrettier()
-        break
-      case 'eslint':
-        initEslint()
-        break
-      case 'stylelint':
-        initStylelint()
-        break
-      case 'git':
-        initGit()
-        break
-    }
-    console.log(`${chalk.bgCyan.black(type)} 初始化完毕`)
+    type.forEach((v) => {
+      init(v)
+    })
   })
 
 program.parse()

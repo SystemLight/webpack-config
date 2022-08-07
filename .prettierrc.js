@@ -1,5 +1,5 @@
-const fabric = require('./packages/fabric')
+const fabric = require('@systemlight/fabric')
 
 module.exports = {
-  ...fabric.prettier
+  ...fabric.prettier,
 }

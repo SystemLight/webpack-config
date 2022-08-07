@@ -254,3 +254,11 @@ module.exports = (env, argv) => new webpack5RecommendConfig(argv.mode || 'develo
   .build()
   .toConfig()
 ```
+
+---
+
+注意事项？
+
+- 如果你在开发一个库或多项目仓库 (monorepo)，请注意导入 CSS 是具有副作用的。
+- 请确保在 package.json 中移除 "sideEffects": false，
+- 否则 CSS 代码块会在生产环境构建时被 webpack 丢掉

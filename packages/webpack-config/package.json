@@ -1,8 +1,12 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "5.7.0",
+  "version": "6.0.0",
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "rollup -c"
   },
   "keywords": [
     "webpack",
@@ -15,9 +19,10 @@
     "generate webpack config"
   ],
   "description": "Webpack smart configuration.",
-  "main": "src/main.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "src/"
+    "dist/"
   ],
   "author": "SystemLighht",
   "license": "MIT",
@@ -32,6 +37,7 @@
   "engines": {
     "node": ">=16.15.0"
   },
+  "packageManager": "pnpm@7.8.0",
   "peerDependenciesMeta": {
     "style-loader": {
       "optional": true
@@ -65,28 +71,38 @@
     }
   },
   "peerDependencies": {
-    "webpack": "^5.0.0",
-    "style-loader": "*",
+    "babel-loader": "*",
     "css-loader": "*",
+    "less-loader": "*",
     "postcss-loader": "*",
     "sass-loader": "*",
-    "less-loader": "*",
+    "style-loader": "*",
     "stylus-loader": "*",
     "thread-loader": "*",
-    "babel-loader": "*",
     "ts-loader": "*",
-    "vue-loader": "*"
+    "vue-loader": "*",
+    "webpack": "^5.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.4",
+    "@types/mockjs": "^1.0.6",
+    "@types/node": "^18.6.4",
+    "del": "6.1.1",
+    "rollup": "^2.77.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4",
     "webpack": "^5.74.0"
   },
   "dependencies": {
     "@soda/friendly-errors-webpack-plugin": "^1.8.1",
-    "@systemlight/webpack-config-mockserver": "workspace:^5.1.3",
+    "@systemlight/webpack-config-mockserver": "workspace:^6.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.6.1",
     "terser-webpack-plugin": "^5.3.3",
+    "webpack-chain": "^6.5.1",
     "webpack-merge": "^5.8.0",
     "webpackbar": "^5.0.2"
   }

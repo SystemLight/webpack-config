@@ -6,3 +6,5 @@ scripts/
 tests/
 plop-templates/
 assets/
+
+*.d.ts

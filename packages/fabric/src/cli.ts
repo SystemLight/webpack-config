@@ -90,6 +90,7 @@ program
       init('prettier')
       init('eslint')
       init('stylelint')
+      return
     }
 
     type.forEach((v) => {

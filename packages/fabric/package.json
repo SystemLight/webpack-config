@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/fabric",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -17,6 +17,7 @@
   ],
   "description": "A collection of configuration files containing prettier, eslint, stylelint.",
   "main": "dist/main.js",
+  "types": "dist/main.d.ts",
   "files": [
     "dist/"
   ],
@@ -36,7 +37,7 @@
   "engines": {
     "node": ">=16.15.0"
   },
-  "packageManager": "pnpm@7.8.0",
+  "packageManager": "pnpm@7.9.0",
   "peerDependenciesMeta": {
     "prettier": {
       "optional": true

@@ -51,18 +51,6 @@ function initGit() {
 }
 
 function init(type) {
-  if (!type) {
-    initPrettier()
-    console.log(`${chalk.bgCyan.black('prettier')} 初始化完毕`)
-
-    initEslint()
-    console.log(`${chalk.bgCyan.black('eslint')} 初始化完毕`)
-
-    initStylelint()
-    console.log(`${chalk.bgCyan.black('stylelint')} 初始化完毕`)
-    return
-  }
-
   switch (type) {
     case 'prettier':
       initPrettier()
@@ -98,6 +86,12 @@ program
     ])
   )
   .action(({type}) => {
+    if (!type) {
+      init('prettier')
+      init('eslint')
+      init('stylelint')
+    }
+
     type.forEach((v) => {
       init(v)
     })

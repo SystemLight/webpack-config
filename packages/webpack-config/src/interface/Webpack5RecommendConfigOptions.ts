@@ -3,7 +3,7 @@ import Config from 'webpack-chain'
 type LibraryName = boolean | string | string[]
 
 export type Dictionary = {
-  [key: string]: string
+  [key: string]: any
 }
 
 type ConvertRequiredType<T, TC, TR> = {

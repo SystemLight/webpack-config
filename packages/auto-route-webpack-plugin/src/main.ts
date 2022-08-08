@@ -8,7 +8,8 @@ import type {Compiler} from 'webpack'
 
 import {NS} from './constant'
 
-const schema = require('./schema.js')
+const schema = require('./schema.json')
+
 const nanoid = customAlphabet('1234567890abcdef', 10)
 
 /**

@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "prepare": "husky install",
+    "postinstall": "pnpm -C packages/fabric build",
     "lint:prettier": "prettier -w \"packages/**/*.ts\"",
     "lint:eslint-check": "eslint --ext ts \"packages/*/src/**.ts\"",
     "lint:eslint": "eslint --fix --ext ts \"packages/*/src/**.ts\"",

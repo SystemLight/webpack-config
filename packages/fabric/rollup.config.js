@@ -19,7 +19,8 @@ export default defineConfig([
     output: {
       dir: 'dist/',
       format: 'cjs',
-      sourcemap: false
+      sourcemap: false,
+      preserveModules:true
     },
     plugins: [...commonPlugins]
   },

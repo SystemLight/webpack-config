@@ -21,6 +21,7 @@ export function getEslintConfig(_isTsProject = isTsProject) {
     },
     settings: {},
     rules: {
+      'no-undef': 'off',
       'no-control-regex': 'off',
       'no-invalid-this': 'off',
       'no-unused-vars': 'off',
@@ -81,6 +82,7 @@ export function getEslintConfig(_isTsProject = isTsProject) {
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/ban-ts-comment': 'off'
     }
     Object.assign(eslintConfig.rules!, typescriptRule)

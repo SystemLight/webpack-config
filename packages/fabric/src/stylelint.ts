@@ -15,12 +15,12 @@ let stylelintConfig: Config = {
   rules: {
     'plugin/declaration-block-no-ignored-properties': true,
 
+    'no-descending-specificity': null,
+    'no-empty-source': null,
     'selector-class-pattern': null,
     'selector-type-no-unknown': null,
-    'no-empty-source': null,
     'selector-list-comma-newline-after': null,
     'font-family-no-missing-generic-family-keyword': null,
-    'no-descending-specificity': null,
 
     indentation: 2,
     'color-hex-case': 'upper',
@@ -37,7 +37,14 @@ let stylelintConfig: Config = {
     'value-keyword-case': [
       'lower',
       {
-        ignoreProperties: ['composes']
+        ignoreProperties: ['composes'],
+        ignoreFunctions: ['v-bind']
+      }
+    ],
+    'function-no-unknown': [
+      true,
+      {
+        ignoreFunctions: ['func.rpx', 'v-bind']
       }
     ]
   }
@@ -45,6 +52,18 @@ let stylelintConfig: Config = {
 
 if (includeLib('sass')) {
   (stylelintConfig.extends as string[]).push('stylelint-config-standard-scss', 'stylelint-config-prettier-scss')
+  ;(stylelintConfig.rules as any)['scss/function-no-unknown'] = [
+    true,
+    {
+      ignoreFunctions: ['func.rpx', 'v-bind']
+    }
+  ]
+  ;(stylelintConfig.rules as any)['scss/at-rule-no-unknown'] = [
+    true,
+    {
+      ignoreAtRules: ['tailwind', 'apply']
+    }
+  ]
 }
 
 if (includeLib('vue')) {

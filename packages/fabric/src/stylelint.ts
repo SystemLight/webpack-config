@@ -2,6 +2,12 @@ import type {Config} from 'stylelint'
 
 import {includeLib} from './utils'
 
+/**
+ * https://stylelint.io/user-guide/rules/list
+ * - null（关闭规则）
+ * - 单个值（primary option）
+ * - 具有两个值的数组 ( [primary option, secondary options])
+ */
 let stylelintConfig: Config = {
   ignoreFiles: ['*.js', '*.jsx', '*.ts', '*.tsx'],
   extends: ['stylelint-config-css-modules', 'stylelint-config-idiomatic-order'],
@@ -39,6 +45,15 @@ let stylelintConfig: Config = {
 
 if (includeLib('sass')) {
   (stylelintConfig.extends as string[]).push('stylelint-config-standard-scss', 'stylelint-config-prettier-scss')
+}
+
+if (includeLib('vue')) {
+  // 依赖postcss-html
+  (stylelintConfig.extends as string[]).push('stylelint-config-html/vue')
+
+  if (includeLib('sass')) {
+    (stylelintConfig.extends as string[]).push('stylelint-config-recommended-vue/scss')
+  }
 }
 
 export default stylelintConfig

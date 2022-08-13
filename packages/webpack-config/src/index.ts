@@ -489,7 +489,7 @@ export class Webpack5RecommendConfig {
 
       // stylus解析
       if (this.isInclude('stylus')) {
-        this.getCssLoader(this._config.module.rule('stylus').test(/\.styl$/), 'stylus')
+        this.getCssLoader(this._config.module.rule('stylus').test(/\.styl(us)?$/), 'stylus')
       }
     }
 

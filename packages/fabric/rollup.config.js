@@ -20,37 +20,8 @@ export default defineConfig([
       dir: 'dist/',
       format: 'cjs',
       sourcemap: false,
-      preserveModules:true
-    },
-    plugins: [...commonPlugins]
-  },
-  {
-    input: 'src/eslint.ts',
-    output: {
-      dir: 'dist/',
-      format: 'cjs',
-      sourcemap: false,
-      exports: 'default'
-    },
-    plugins: [...commonPlugins]
-  },
-  {
-    input: 'src/tsEslint.ts',
-    output: {
-      dir: 'dist/',
-      format: 'cjs',
-      sourcemap: false,
-      exports: 'default'
-    },
-    plugins: [...commonPlugins]
-  },
-  {
-    input: 'src/stylelint.ts',
-    output: {
-      dir: 'dist/',
-      format: 'cjs',
-      sourcemap: false,
-      exports: 'default'
+      preserveModules: true,
+      exports: 'auto'
     },
     plugins: [...commonPlugins]
   },

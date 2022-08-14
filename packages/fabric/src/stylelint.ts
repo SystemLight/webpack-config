@@ -28,10 +28,17 @@ let stylelintConfig: Config = {
         ignoreUnits: ['rpx']
       }
     ],
+    'function-no-unknown': [
+      true,
+      {
+        ignoreFunctions: ['func.rpx', 'v-bind']
+      }
+    ],
     'value-keyword-case': [
       'lower',
       {
-        ignoreProperties: ['composes']
+        ignoreProperties: ['composes'],
+        ignoreFunctions: ['v-bind']
       }
     ]
   }
@@ -39,6 +46,29 @@ let stylelintConfig: Config = {
 
 if (includeLib('sass')) {
   (stylelintConfig.extends as string[]).push('stylelint-config-standard-scss', 'stylelint-config-prettier-scss')
+  ;(stylelintConfig.rules as string[])['scss/at-rule-no-unknown'] = [
+    true,
+    {
+      ignoreAtRules: ['tailwind', 'apply']
+    }
+  ]
+  ;(stylelintConfig.rules as string[])['scss/function-no-unknown'] = [
+    true,
+    {
+      ignoreFunctions: ['func.rpx', 'v-bind']
+    }
+  ]
 }
+
+/**
+ * vue项目依赖
+ * postcss-html
+ * stylelint-config-html
+ * stylelint-config-recommended-vue
+ *
+ * extends
+ * - stylelint-config-html/vue
+ * - stylelint-config-recommended-vue/scss
+ */
 
 export default stylelintConfig

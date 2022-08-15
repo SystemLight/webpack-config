@@ -398,12 +398,8 @@ export class Webpack5RecommendConfig {
     }
 
     if (enableMinimize) {
-      this._config.optimization.merge({
-        minimize: enableMinimize,
-        minimizer: [
-          new TerserWebpackPlugin() // 压缩器
-        ]
-      })
+      this._config.optimization.minimize(enableMinimize)
+      this._config.optimization.set('minimizer', [new TerserWebpackPlugin()])
     }
 
     return this

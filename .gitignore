@@ -7,6 +7,13 @@
 # Special content
 build/
 
+# MacOS
+.DS_Store
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+
 # Logs
 logs
 *.log

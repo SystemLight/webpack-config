@@ -2,6 +2,12 @@ import type {Config} from 'stylelint'
 
 import {includeLib} from './utils'
 
+/**
+ * https://stylelint.io/user-guide/rules/list
+ * - null（关闭规则）
+ * - 单个值（primary option）
+ * - 具有两个值的数组 ( [primary option, secondary options])
+ */
 let stylelintConfig: Config = {
   ignoreFiles: ['*.js', '*.jsx', '*.ts', '*.tsx'],
   extends: ['stylelint-config-css-modules', 'stylelint-config-idiomatic-order'],
@@ -9,12 +15,12 @@ let stylelintConfig: Config = {
   rules: {
     'plugin/declaration-block-no-ignored-properties': true,
 
+    'no-descending-specificity': null,
+    'no-empty-source': null,
     'selector-class-pattern': null,
     'selector-type-no-unknown': null,
-    'no-empty-source': null,
     'selector-list-comma-newline-after': null,
     'font-family-no-missing-generic-family-keyword': null,
-    'no-descending-specificity': null,
 
     indentation: 2,
     'color-hex-case': 'upper',

@@ -399,7 +399,7 @@ export class Webpack5RecommendConfig {
 
     if (enableMinimize) {
       this._config.optimization.minimize(enableMinimize)
-      this._config.optimization.set('minimizer', [new TerserWebpackPlugin()])
+      this._config.optimization.set('minimizer', [new TerserWebpackPlugin({extractComments: false})])
     }
 
     return this
@@ -485,7 +485,7 @@ export class Webpack5RecommendConfig {
 
       // stylus解析
       if (this.isInclude('stylus')) {
-        this.getCssLoader(this._config.module.rule('stylus').test(/\.styl(us)?$/), 'stylus')
+        this.getCssLoader(this._config.module.rule('stylus').test(/\.styl$/), 'stylus')
       }
     }
 

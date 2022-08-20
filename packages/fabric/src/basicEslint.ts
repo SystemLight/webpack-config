@@ -6,7 +6,12 @@ import {includeLib, isTsProject} from './utils'
  * https://eslint.org/docs/user-guide/configuring/
  */
 
-export function getEslintConfig(_isTsProject = isTsProject) {
+export function getEslintConfig(
+  _isTsProject = isTsProject,
+  _isVueProject = includeLib('vue'),
+  _isReactProject = includeLib('react')
+) {
+  // 基础规则配置
   let eslintConfig: Linter.Config = {
     root: true,
     extends: ['eslint:recommended'],
@@ -85,6 +90,8 @@ export function getEslintConfig(_isTsProject = isTsProject) {
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/ban-ts-comment': 'off'
     }
+
+    // 混入Typescript规则配置
     Object.assign(eslintConfig.rules!, typescriptRule)
   } else {
     // js解析器：https://www.npmjs.com/package/@babel/eslint-parser
@@ -101,8 +108,8 @@ export function getEslintConfig(_isTsProject = isTsProject) {
       ]
     ]
 
-    if (includeLib('react')) {
-      presets.push('@babel/preset-react')
+    if (_isReactProject) {
+      presets.push('@babel/preset-react') // js开发解析react jsx
     }
 
     eslintConfig.parserOptions = {
@@ -114,7 +121,7 @@ export function getEslintConfig(_isTsProject = isTsProject) {
     }
   }
 
-  if (includeLib('react')) {
+  if (_isReactProject) {
     (eslintConfig.extends as string[]).push(
       'plugin:react/recommended', // eslint-plugin-react
       'plugin:react-hooks/recommended' // eslint-plugin-react-hooks
@@ -126,10 +133,12 @@ export function getEslintConfig(_isTsProject = isTsProject) {
 
     // React规则
     const reactRule = {}
+
+    // 混入React规则配置
     Object.assign(eslintConfig.rules!, reactRule)
   }
 
-  if (includeLib('vue')) {
+  if (_isVueProject) {
     (eslintConfig.extends as string[]).push(
       'plugin:vue/vue3-recommended' // eslint-plugin-vue
     )
@@ -142,6 +151,8 @@ export function getEslintConfig(_isTsProject = isTsProject) {
     const vueRule = {
       'vue/multi-word-component-names': 'off'
     }
+
+    // 混入Vue规则配置
     Object.assign(eslintConfig.rules!, vueRule)
   }
 

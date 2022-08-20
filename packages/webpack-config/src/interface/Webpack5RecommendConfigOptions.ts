@@ -47,7 +47,7 @@ export interface DefaultOptions {
   isNodeLibrary: boolean
   libraryName: LibraryName
   externals: string[]
-  define: Dictionary
+  define: any
   skipCheckBabel: boolean
 
   buildConfigCallback: (config: Config, context: any) => void

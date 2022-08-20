@@ -716,6 +716,16 @@ export class Webpack5RecommendConfig {
       }
     }
 
+    if (this.isInclude('tailwindcss')) {
+      Object.assign(cacheGroups, {
+        tailwind: {
+          name: 'tailwind',
+          test: /tailwind.css$/,
+          enforce: true
+        }
+      })
+    }
+
     if (this.isInclude('react')) {
       Object.assign(cacheGroups, {
         react: {
@@ -747,11 +757,11 @@ export class Webpack5RecommendConfig {
       })
     }
 
-    if (this.isInclude('element-ui')) {
+    if (this.isInclude('element-plus')) {
       Object.assign(cacheGroups, {
         elementUI: {
-          name: 'element-ui',
-          test: /[\\/]node_modules[\\/](element-ui)/,
+          name: 'element-plus',
+          test: /[\\/]node_modules[\\/](element-plus)/,
           chunks: 'all'
         }
       })

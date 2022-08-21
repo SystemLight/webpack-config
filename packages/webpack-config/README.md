@@ -40,76 +40,9 @@ const {wcf} = require('@systemlight/webpack-config')
 module.exports = wcf()
 ```
 
-实例化构建方式
+### Options
 
-```js
-const {webpack5RecommendConfig} = require('@systemlight/webpack-config')
-
-module.exports = (env, argv) => new webpack5RecommendConfig(argv.mode || 'development', !!env['WEBPACK_SERVE'])
-  .build(function (config) {
-    if (this.isDevelopment) {
-      // 修改内置的config内容，设置值内容会被自动merge
-      config.value = {
-        devtool: false
-      }
-    }
-  })
-  .toConfig();
-```
-
-参数配置
-
-```javascript
-const {wcf} = require('@systemlight/webpack-config');
-const WalkWebpackPlugin = require('@systemlight/walk-webpack-plugin');
-
-module.exports = wcf({
-  buildOptions: {
-    postcss: true,
-    emitCss: false,
-    enableBabel: false,
-    skipCheckBabel: true,
-    define: {
-      __VUE_OPTIONS_API__: true
-    }
-  },
-  buildConfigCallback(config) {
-    this.rebuildDexterity(false)
-    config.value={
-        plugins:[new WalkWebpackPlugin()]
-    }
-  }
-})
-```
-
-in `package.json`
-
-```json
-{
-  "scripts": {
-    "build:webpack": "webpack --mode production",
-    "build:webpack-dev": "webpack --mode development",
-    "dev:serve": "webpack serve --mode development"
-  }
-}
-```
-
-### API
-
-#### 创建配置实例对象
-
-- new Webpack5RecommendConfig(mode, isStartSever, options) : 创建默认web项目，自检vue或者react
-- Webpack5RecommendConfig.newLibrary(mode, isStartSever, libraryName, genCallback) : 创建类库项目
-- Webpack5RecommendConfig.newReactLibrary(mode, isStartSever, libraryName, genCallback) : 创建react库项目
-- Webpack5RecommendConfig.newNodeLibrary(mode, isStartSever, buildCallback) : 创建node库项目
-
-#### 实例对象方法
-
-- build(buildCallback) : 执行构建方法，该方法会执行多个分块构建，接收buildCallback回调可以对webpack配置对象进行细节修改
-- toConfig(debug) : 生成webpack配置对象并返回
-- buildEnd() : 合并上面两个接口操作，返回配置数据
-
-#### Types
+- [详情参考](src/interface/Webpack5RecommendConfigOptions.ts)
 
 ```javascript
 /**
@@ -201,63 +134,7 @@ in `package.json`
  */
 ```
 
-## QA:
-
-如何关闭HTML文件弹出？
-
-> 默认会读取src/index.ejs文件作为模板，如果存在的话，想要关闭html文件弹出可以配置`emitHtml:false`
-
----
-
-为什么使用vue时候options API不起效果？
-
-> webpack5RecommendConfig保持现代化编程只支持vue3并且默认禁用optionsAPI，启用方法如下：
-
-```javascript
-const {Webpack5RecommendConfig: WebpackConfig} = require('@systemlight/webpack-config');
-
-module.exports = (env, argv) => new WebpackConfig(argv.mode || 'development', !!env['WEBPACK_SERVE'], {
-  define: {
-    __VUE_OPTIONS_API__: true
-  }
-}).build().toConfig()
-```
-
----
-
-为什么安装webpack-config还要安装一堆插件？
-
-> webpack-config只是为了更方便智能的生成webpack配置，所以插件版本需要用户自己安装和配置，webpack-config会自动识别并生成配置
-
----
-
-如何配置mock服务？
-
-In `mock/index.js`
-
-```javascript
-const mocks = [
-  // #auto-mock
-]
-
-module.exports = mocks
-```
-
-In `webpack.config.js`
-
-```javascript
-const {Webpack5RecommendConfig} = require('@systemlight/webpack-config')
-
-module.exports = (env, argv) => new webpack5RecommendConfig(argv.mode || 'development', !!env['WEBPACK_SERVE'], {
-  enableMock: true
-})
-  .build()
-  .toConfig()
-```
-
----
-
-注意事项？
+### 注意事项？
 
 - 如果你在开发一个库或多项目仓库 (monorepo)，请注意导入 CSS 是具有副作用的。
 - 请确保在 package.json 中移除 "sideEffects": false，

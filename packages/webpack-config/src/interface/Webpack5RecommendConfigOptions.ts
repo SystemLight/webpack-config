@@ -1,15 +1,19 @@
+import type {Configuration} from 'webpack'
+
 import Config from 'webpack-chain'
 
 type LibraryName = boolean | string | string[]
-
-export type Dictionary = {
-  [key: string]: any
-}
 
 type ConvertRequiredType<T, TC, TR> = {
   [P in keyof T]: T[P] extends TC ? TR : T[P]
 }
 
+/**
+ * - auto: 开发阶段为true
+ * - !auto: 生产阶段为true
+ * - ^auto: 满足依赖为true
+ * - boolean: 永久为true或者false
+ */
 export type AutoVal = 'auto' | '!auto' | '^auto' | boolean
 
 export interface DefaultOptions {
@@ -25,6 +29,7 @@ export interface DefaultOptions {
   entryDefaultName: string
   entryDefaultFileName: string | null
 
+  enableDevtool: AutoVal
   enableFriendly: AutoVal
   enableProfile: AutoVal
   enableProxy: AutoVal
@@ -49,8 +54,11 @@ export interface DefaultOptions {
   externals: string[]
   define: any
   skipCheckBabel: boolean
+  open: boolean
+  port: number
 
-  buildConfigCallback: (config: Config, context: any) => void
+  configureWebpack: Configuration
+  chainWebpack: (config: Config, context: any) => void
 }
 
 export interface Options extends ConvertRequiredType<DefaultOptions, AutoVal, boolean> {

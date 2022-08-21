@@ -1,17 +1,18 @@
-import * as path from 'path'
-import * as fs from 'fs'
-import {createRequire} from 'module'
+import * as path from 'node:path'
+import * as fs from 'node:fs'
+import {createRequire} from 'node:module'
 
-import {mockServer} from '@systemlight/webpack-config-mockserver'
+import webpack, {type Configuration as WebpackConfiguration} from 'webpack'
+import type {Rule} from 'webpack-chain'
+import Config from 'webpack-chain'
+import {merge} from 'webpack-merge'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import CopyWebpackPlugin from 'copy-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
-import type {Rule} from 'webpack-chain'
-import Config from 'webpack-chain'
-import webpack, {Configuration as WebpackConfiguration} from 'webpack'
+import {mockServer} from '@systemlight/webpack-config-mockserver'
 
 import type {
   AutoVal,
@@ -56,16 +57,17 @@ export class Webpack5RecommendConfig {
       entryDefaultName: 'main',
       entryDefaultFileName: null,
 
+      enableDevtool: 'auto',
       enableFriendly: true,
       enableProfile: false,
       enableProxy: false,
       enableMock: false,
       enableThread: false,
-      enableHash: false,
-      enableSplitChunk: false,
-      enableBabel: false,
-      enablePostcss: false,
-      enableMinimize: false,
+      enableHash: true,
+      enableSplitChunk: 'auto',
+      enableBabel: '^auto',
+      enablePostcss: '^auto',
+      enableMinimize: 'auto',
       enableResolveCss: '^auto',
       enableResolveAsset: true,
 
@@ -80,8 +82,11 @@ export class Webpack5RecommendConfig {
       externals: [],
       define: {},
       skipCheckBabel: false,
+      open: true,
+      port: 8080,
 
-      buildConfigCallback: (config) => config
+      configureWebpack: {},
+      chainWebpack: (config) => config
     }
 
     this.mode = mode || 'development'
@@ -89,7 +94,7 @@ export class Webpack5RecommendConfig {
     this.isDevelopment = !this.isProduction
     this.isStartSever = !!isStartSever
 
-    // 合并阶段
+    // 合并解析参数阶段
     if (Array.isArray(options)) {
       if (options.length === 1) {
         Object.assign(defaultOptions, options[0])
@@ -128,6 +133,8 @@ export class Webpack5RecommendConfig {
     let {entryDefaultName, scriptExt} = defaultOptions
     defaultOptions.entryDefaultFileName = defaultOptions.entryDefaultFileName || `${entryDefaultName}.${scriptExt}`
 
+    // 初始化AutoValue类型参数
+    defaultOptions.enableDevtool = this.autoVal(defaultOptions.enableDevtool)
     defaultOptions.enableFriendly = this.autoVal(defaultOptions.enableFriendly)
     defaultOptions.enableProfile = this.autoVal(defaultOptions.enableProfile)
     defaultOptions.enableProxy = this.autoVal(defaultOptions.enableProxy)
@@ -135,7 +142,7 @@ export class Webpack5RecommendConfig {
     defaultOptions.enableThread = this.autoVal(defaultOptions.enableThread, ['thread-loader'])
     defaultOptions.enableHash = this.autoVal(defaultOptions.enableHash)
     defaultOptions.enableSplitChunk = this.autoVal(defaultOptions.enableSplitChunk)
-    defaultOptions.enableBabel = this.autoVal(defaultOptions.enableBabel)
+    defaultOptions.enableBabel = this.autoVal(defaultOptions.enableBabel, ['babel-loader', '@babel/core'])
     defaultOptions.enablePostcss = this.autoVal(defaultOptions.enablePostcss, [
       'postcss-loader',
       'css-loader',
@@ -154,7 +161,7 @@ export class Webpack5RecommendConfig {
 
     this.options = defaultOptions as Options
 
-    // 检测阶段
+    // 检测配置合理性阶段
     if (this.isProduction) {
       // 生产环境检查是否开启babel-loader
       this.checkEnableBabel()
@@ -180,8 +187,6 @@ export class Webpack5RecommendConfig {
       .buildRules()
       .buildPlugins()
 
-    this.options.buildConfigCallback(this._config, this)
-
     return this
   }
 
@@ -192,7 +197,7 @@ export class Webpack5RecommendConfig {
       infrastructureLogging: {
         level: 'error'
       },
-      devtool: this.isDevelopment ? 'eval-cheap-module-source-map' : false,
+      devtool: this.options.enableDevtool ? 'eval-cheap-module-source-map' : false,
       context: this.options.cwd
     }
 
@@ -316,14 +321,13 @@ export class Webpack5RecommendConfig {
     let {enableProxy, enableMock} = this.options
 
     // https://webpack.js.org/configuration/dev-server/
-    let port = 8080
     let devServerOptions = {
       historyApiFallback: true, // https://github.com/bripkens/connect-history-api-fallback
       host: '0.0.0.0',
       liveReload: true,
       hot: false, // HMR（Hot Module Replacement），JS文件内需要调用accept()
-      open: [`http://localhost:${port}/`],
-      port: port,
+      open: this.options.open ? [`http://localhost:${this.options.port}/`] : false,
+      port: this.options.port,
       magicHtml: false,
       // https://github.com/webpack/webpack-dev-middleware
       client: {
@@ -815,15 +819,17 @@ export class Webpack5RecommendConfig {
     return this._dependencies.includes(libraryName)
   }
 
-  toConfig() {
-    return this._config.toConfig()
-  }
-
-  toString() {
-    return this._config.toString()
+  toConfig(): WebpackConfiguration {
+    this.options.chainWebpack(this._config, this)
+    return merge(this._config.toConfig(), this.options.configureWebpack)
   }
 }
 
+/**
+ * 注意：尽量不要在options.configureWebpack中配置mode，而是在webpack命令行中使用--mode进行指定
+ * 直接指定在configureWebpack中不会影响Webpack5RecommendConfig的默认行为，只会改变webpack的默认行为
+ * @param options - Webpack5RecommendConfigOptions
+ */
 export function wcf(options: Webpack5RecommendConfigOptions) {
   return (env, argv) => {
     const mode = argv.mode || 'development'

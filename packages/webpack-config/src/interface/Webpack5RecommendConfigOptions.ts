@@ -29,10 +29,10 @@ export interface DefaultOptions {
   entryDefaultName: string
   entryDefaultFileName: string | null
 
+  enableSSL: AutoVal
   enableDevtool: AutoVal
   enableFriendly: AutoVal
   enableProfile: AutoVal
-  enableProxy: AutoVal
   enableMock: AutoVal
   enableThread: AutoVal
   enableHash: AutoVal
@@ -56,6 +56,7 @@ export interface DefaultOptions {
   skipCheckBabel: boolean
   open: boolean
   port: number
+  proxyHostAndPort: [string, number] | null
 
   configureWebpack: Configuration
   chainWebpack: (config: Config, context: any) => void

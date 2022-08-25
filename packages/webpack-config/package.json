@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "6.1.0",
+  "version": "6.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -99,9 +99,11 @@
   "dependencies": {
     "@soda/friendly-errors-webpack-plugin": "^1.8.1",
     "@systemlight/webpack-config-mockserver": "workspace:^6.0.1",
+    "address": "^1.2.0",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.6.1",
+    "node-forge": "^1.3.1",
     "terser-webpack-plugin": "^5.3.3",
     "webpack-chain": "^6.5.1",
     "webpack-merge": "^5.8.0",

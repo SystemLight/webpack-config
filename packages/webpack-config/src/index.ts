@@ -2,6 +2,7 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import {createRequire} from 'node:module'
 
+import address from 'address'
 import webpack, {type Configuration as WebpackConfiguration} from 'webpack'
 import type {Rule} from 'webpack-chain'
 import Config from 'webpack-chain'
@@ -14,6 +15,8 @@ import WebpackBar from 'webpackbar'
 import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
 
+import {getCertificate} from './certificate'
+
 import type {
   AutoVal,
   DefaultOptions,
@@ -23,6 +26,7 @@ import type {
 
 export class Webpack5RecommendConfig {
   public mode: 'development' | 'production'
+  public devServerProtocol = 'http'
   public isProduction: boolean
   public isDevelopment: boolean
   public isStartSever: boolean
@@ -57,10 +61,10 @@ export class Webpack5RecommendConfig {
       entryDefaultName: 'main',
       entryDefaultFileName: null,
 
+      enableSSL: false,
       enableDevtool: 'auto',
       enableFriendly: true,
       enableProfile: false,
-      enableProxy: false,
       enableMock: false,
       enableThread: false,
       enableHash: true,
@@ -82,8 +86,9 @@ export class Webpack5RecommendConfig {
       externals: [],
       define: {},
       skipCheckBabel: false,
-      open: true,
+      open: false,
       port: 8080,
+      proxyHostAndPort: null,
 
       configureWebpack: {},
       chainWebpack: (config) => config
@@ -137,7 +142,6 @@ export class Webpack5RecommendConfig {
     defaultOptions.enableDevtool = this.autoVal(defaultOptions.enableDevtool)
     defaultOptions.enableFriendly = this.autoVal(defaultOptions.enableFriendly)
     defaultOptions.enableProfile = this.autoVal(defaultOptions.enableProfile)
-    defaultOptions.enableProxy = this.autoVal(defaultOptions.enableProxy)
     defaultOptions.enableMock = this.autoVal(defaultOptions.enableMock)
     defaultOptions.enableThread = this.autoVal(defaultOptions.enableThread, ['thread-loader'])
     defaultOptions.enableHash = this.autoVal(defaultOptions.enableHash)
@@ -173,6 +177,9 @@ export class Webpack5RecommendConfig {
     if (this.options.enableBabel) {
       // 启用react时检查是否需要完成react项目编译
       this.checkBabelCompileReact()
+    }
+    if (this.options.enableSSL) {
+      this.devServerProtocol = 'https'
     }
   }
 
@@ -318,7 +325,7 @@ export class Webpack5RecommendConfig {
   }
 
   buildDevServer() {
-    let {enableProxy, enableMock} = this.options
+    let {enableMock, enableSSL, proxyHostAndPort} = this.options
 
     // https://webpack.js.org/configuration/dev-server/
     let devServerOptions = {
@@ -326,7 +333,7 @@ export class Webpack5RecommendConfig {
       host: '0.0.0.0',
       liveReload: true,
       hot: false, // HMR（Hot Module Replacement），JS文件内需要调用accept()
-      open: this.options.open ? [`http://localhost:${this.options.port}/`] : false,
+      open: this.options.open ? [this.getUrl()] : false,
       port: this.options.port,
       magicHtml: false,
       // https://github.com/webpack/webpack-dev-middleware
@@ -341,11 +348,11 @@ export class Webpack5RecommendConfig {
     this._config.devServer.merge(devServerOptions)
     this._config.devServer.set('allowedHosts', 'all')
 
-    if (enableProxy) {
+    if (proxyHostAndPort) {
       this._config.devServer.proxy({
         // https://github.com/chimurai/http-proxy-middleware
         '/api': {
-          target: 'http://localhost:5000/api',
+          target: `${this.getUrl(proxyHostAndPort[0], proxyHostAndPort[1])}api`,
           changeOrigin: true,
           secure: false
         }
@@ -359,6 +366,21 @@ export class Webpack5RecommendConfig {
         }
         mockServer(devServer.app)
         return middlewares
+      })
+    }
+
+    if (enableSSL) {
+      // https://webpack.js.org/configuration/dev-server/#devserverserver
+      // 使用 spdy 通过 HTTP/2 服务
+      // 对于 Node 15.0.0 及更高版本，此选项将被忽略，因为这些版本的 spdy 已损坏
+      // 一旦 Express 支持，开发服务器将迁移到 Node 的内置 HTTP/2
+      let pem = getCertificate()
+      this._config.devServer.set('server', {
+        type: 'https',
+        options: {
+          key: pem,
+          cert: pem
+        }
       })
     }
 
@@ -625,10 +647,14 @@ export class Webpack5RecommendConfig {
       )
 
       this._config.when(this.isStartSever, (config) => {
+        let hostIp = address.ip()
         config.plugin('FriendlyErrorsWebpackPlugin').use(FriendlyErrorsWebpackPlugin, [
           {
             compilationSuccessInfo: {
-              messages: [`You application is running here http://localhost:${this._config.devServer.get('port')}`]
+              messages: [
+                `You application is running here ${this.getUrl()}`,
+                `You application is running here ${this.getUrl(hostIp)}`
+              ]
             }
           }
         ])
@@ -817,6 +843,10 @@ export class Webpack5RecommendConfig {
 
   isInclude(libraryName) {
     return this._dependencies.includes(libraryName)
+  }
+
+  getUrl(host?: string, port?: number) {
+    return `${this.devServerProtocol}://${host || 'localhost'}:${port || this.options.port}/`
   }
 
   toConfig(): WebpackConfiguration {

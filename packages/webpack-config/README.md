@@ -44,6 +44,8 @@ module.exports = wcf()
 
 - [详情参考](src/interface/Webpack5RecommendConfigOptions.ts)
 
+> 下述列出的配置项实时项不太高，详情参考上述类型定义
+
 ```javascript
 /**
  * @typedef Webpack5RecommendConfigOptions

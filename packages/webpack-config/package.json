@@ -2,7 +2,8 @@
   "name": "@systemlight/webpack-config",
   "version": "6.2.0",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "prepublish": "pnpm run build",

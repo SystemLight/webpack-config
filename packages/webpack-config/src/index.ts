@@ -38,8 +38,36 @@ export class Webpack5RecommendConfig {
   private readonly _require: NodeRequire
 
   /**
-   * webpack配置项：https://webpack.js.org/configuration/
-   * 为什么不用Dll：https://github.com/facebook/create-react-app/pull/2710#issuecomment-378523967
+   * 开发必备的核心概念参考
+   *
+   * webpack配置项
+   * https://webpack.js.org/configuration/
+   *
+   * 为什么不用Dll
+   * https://github.com/facebook/create-react-app/pull/2710#issuecomment-378523967
+   *
+   * 动态引入上下文推断规则
+   * https://webpack.js.org/plugins/context-replacement-plugin/
+   *
+   * 为什么不使用preload-webpack-plugin
+   * webpack5已经支持，并且这个特性会造成重复加载，@vue/cli@5.0.0版本移除该插件引入
+   * preload 是告诉浏览器页面必定需要的资源，浏览器一定会加载这些资源，
+   * prefetch 是告诉浏览器页面可能需要的资源，浏览器不一定会加载这些资源
+   * https://webpack.js.org/guides/code-splitting/#prefetchingpreloading-modules
+   * https://juejin.cn/post/7091953479857471519
+   *
+   * loader加载阶段执行顺序
+   * https://juejin.cn/post/7037696103973650463
+   * https://juejin.cn/post/7036379350710616078
+   *
+   * pre、normal、inline以及post执行顺序
+   * Pitching 阶段: loader 上的 pitch 方法，按照 后置(post)、行内(inline)、普通(normal)、前置(pre) 的顺序调用
+   * Normal 阶段: loader 上的 常规方法，按照 前置(pre)、普通(normal)、行内(inline)、后置(post) 的顺序调用
+   *
+   * inline loader前缀符
+   * !前缀 将禁用所有已配置的 normal loader(普通 loader)
+   * !!前缀 将禁用所有已配置的 loader（preLoader, loader, postLoader）
+   * -!前缀 将禁用所有已配置的 preLoader 和 loader，但是不禁用 postLoaders
    */
   constructor(
     mode?: 'development' | 'production',
@@ -406,6 +434,10 @@ export class Webpack5RecommendConfig {
        * 1. 手动设置规则进行切割
        * 2. 多个入口文件会被当成多个Chunk处理
        * 3. 使用import()进行异步导入
+       *
+       * 产生bundle
+       * 1. 模块是chunk
+       * 2. 满足拆分条件
        */
       this._config.optimization.splitChunks({
         /**
@@ -414,7 +446,6 @@ export class Webpack5RecommendConfig {
          * async: 同步引入的Module中符合手动切割Chunk规则的Module不做解析分离
          */
         chunks: 'all',
-        automaticNameDelimiter: '~',
         cacheGroups: this.getSplitChunksGroup()
       })
 
@@ -595,7 +626,7 @@ export class Webpack5RecommendConfig {
           title: title || 'app',
           filename: 'index.html',
           inject: 'body',
-          scriptLoading: 'defer', // 'blocking'|'defer'|'module'
+          scriptLoading: 'defer', // blocking | defer | module 脚本加载模式
           hash: false,
           // https://github.com/terser/html-minifier-terser
           minify: this.isProduction
@@ -860,7 +891,7 @@ export class Webpack5RecommendConfig {
  * 直接指定在configureWebpack中不会影响Webpack5RecommendConfig的默认行为，只会改变webpack的默认行为
  * @param options - Webpack5RecommendConfigOptions
  */
-export function wcf(options: Webpack5RecommendConfigOptions) {
+export function wcf(options?: Webpack5RecommendConfigOptions) {
   return (env, argv) => {
     const mode = argv.mode || 'development'
     const isStartSever = !!env['WEBPACK_SERVE']

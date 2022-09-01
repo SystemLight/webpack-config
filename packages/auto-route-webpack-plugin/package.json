@@ -2,7 +2,8 @@
   "name": "@systemlight/auto-route-webpack-plugin",
   "version": "3.0.2",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "prepublish": "pnpm run build",

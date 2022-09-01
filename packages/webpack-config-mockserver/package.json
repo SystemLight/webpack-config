@@ -2,7 +2,8 @@
   "name": "@systemlight/webpack-config-mockserver",
   "version": "6.0.1",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "prepublish": "pnpm run build",

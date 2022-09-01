@@ -2,7 +2,8 @@
   "name": "@systemlight/fabric",
   "version": "5.1.5",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "prepublish": "pnpm run build",

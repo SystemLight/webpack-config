@@ -90,7 +90,7 @@ export class Webpack5RecommendConfig {
       entryDefaultFileName: null,
 
       enableSSL: false,
-      enableDevtool: 'auto',
+      enableDevtool: '!auto',
       enableFriendly: true,
       enableProfile: false,
       enableMock: false,

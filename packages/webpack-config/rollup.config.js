@@ -2,11 +2,9 @@ import {defineConfig} from 'rollup'
 import {nodeResolve} from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
-import del from 'del'
+import del from 'rollup-plugin-delete'
 
 let {dependencies = {}, devDependencies = {}} = require('./package.json')
-
-del.sync(['dist/'])
 
 /**
  * https://rollupjs.org/guide/en/#command-line-flags
@@ -16,7 +14,8 @@ export default defineConfig({
   external: [
     ...Object.keys(dependencies),
     ...Object.keys(devDependencies),
-    /package.json/
+    /package.json/,
+    /node-forge/
   ],
   output: {
     dir: 'dist/',
@@ -25,9 +24,10 @@ export default defineConfig({
   },
   plugins: [
     nodeResolve(),
+    commonjs(),
     typescript({
       module: 'ESNext'
     }),
-    commonjs()
+    del({targets: 'dist/*'})
   ]
 })

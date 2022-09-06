@@ -253,7 +253,7 @@ export class Webpack5RecommendConfig {
       output: {
         path: distPath,
         publicPath: publicPath,
-        compareBeforeEmit: false,
+        compareBeforeEmit: false, // 在打包输出文件之前，检查文件在目录中是否已经存在，如果存在就不再新写入一个相同的文件
         iife: true,
         clean: true
       }
@@ -456,7 +456,7 @@ export class Webpack5RecommendConfig {
 
     if (enableMinimize) {
       this._config.optimization.minimize(enableMinimize)
-      this._config.optimization.set('minimizer', [new TerserWebpackPlugin({extractComments: false})])
+      this._config.optimization.minimizer('terser').use(TerserWebpackPlugin, [{extractComments: false} as any])
     }
 
     return this
@@ -880,9 +880,13 @@ export class Webpack5RecommendConfig {
     return `${this.devServerProtocol}://${host || 'localhost'}:${port || this.options.port}/`
   }
 
-  toConfig(): WebpackConfiguration {
+  toConfig(debug = false): WebpackConfiguration {
     this.options.chainWebpack(this._config, this)
-    return merge(this._config.toConfig(), this.options.configureWebpack)
+    let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
+    if (debug) {
+      console.log(JSON.stringify(emitConfig, null, 2))
+    }
+    return emitConfig
   }
 }
 
@@ -890,11 +894,12 @@ export class Webpack5RecommendConfig {
  * 注意：尽量不要在options.configureWebpack中配置mode，而是在webpack命令行中使用--mode进行指定
  * 直接指定在configureWebpack中不会影响Webpack5RecommendConfig的默认行为，只会改变webpack的默认行为
  * @param options - Webpack5RecommendConfigOptions
+ * @param debug - 调试配置项
  */
-export function wcf(options?: Webpack5RecommendConfigOptions) {
+export function wcf(options?: Webpack5RecommendConfigOptions, debug = false) {
   return (env, argv) => {
     const mode = argv.mode || 'development'
     const isStartSever = !!env['WEBPACK_SERVE']
-    return new Webpack5RecommendConfig(mode, isStartSever, options).build().toConfig()
+    return new Webpack5RecommendConfig(mode, isStartSever, options).build().toConfig(debug)
   }
 }

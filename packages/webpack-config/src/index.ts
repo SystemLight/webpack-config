@@ -456,7 +456,9 @@ export class Webpack5RecommendConfig {
 
     if (enableMinimize) {
       this._config.optimization.minimize(enableMinimize)
-      this._config.optimization.minimizer('terser').use(TerserWebpackPlugin, [{extractComments: false} as any])
+      this._config.optimization
+        .minimizer('TerserWebpackPlugin')
+        .use(TerserWebpackPlugin, [{extractComments: false} as any])
     }
 
     return this

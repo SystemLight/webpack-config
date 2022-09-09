@@ -40,6 +40,7 @@ export interface DefaultOptions {
   enableBabel: AutoVal
   enablePostcss: AutoVal
   enableMinimize: AutoVal
+  enableCssModule: AutoVal
   enableResolveCss: AutoVal
   enableResolveAsset: AutoVal
 

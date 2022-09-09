@@ -4,7 +4,7 @@ import {createRequire} from 'node:module'
 
 import address from 'address'
 import webpack, {type Configuration as WebpackConfiguration} from 'webpack'
-import type {Rule} from 'webpack-chain'
+import type {Use, Rule} from 'webpack-chain'
 import Config from 'webpack-chain'
 import {merge} from 'webpack-merge'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
@@ -30,6 +30,7 @@ export class Webpack5RecommendConfig {
   public isProduction: boolean
   public isDevelopment: boolean
   public isStartSever: boolean
+  public hasBabelConfig: boolean
   public options: Options
 
   private _webpack = webpack
@@ -100,6 +101,7 @@ export class Webpack5RecommendConfig {
       enableBabel: '^auto',
       enablePostcss: '^auto',
       enableMinimize: 'auto',
+      enableCssModule: true,
       enableResolveCss: '^auto',
       enableResolveAsset: true,
 
@@ -126,6 +128,7 @@ export class Webpack5RecommendConfig {
     this.isProduction = this.mode === 'production'
     this.isDevelopment = !this.isProduction
     this.isStartSever = !!isStartSever
+    this.hasBabelConfig = fs.existsSync(path.resolve(cwd, 'babel.config.js'))
 
     // 合并解析参数阶段
     if (Array.isArray(options)) {
@@ -196,11 +199,11 @@ export class Webpack5RecommendConfig {
     // 检测配置合理性阶段
     if (this.isProduction) {
       // 生产环境检查是否开启babel-loader
-      this.checkEnableBabel()
+      this.checkEnableBabel('Please enable Babel in the production environment.')
     }
     if (!isTsProject && this.isInclude('react')) {
       // 不是ts项目时包含了react检查是否开启babel-loader
-      this.checkEnableBabel(false)
+      this.checkEnableBabel('Please enable Babel to convert JSX syntax.', false)
     }
     if (this.options.enableBabel) {
       // 启用react时检查是否需要完成react项目编译
@@ -465,6 +468,7 @@ export class Webpack5RecommendConfig {
   }
 
   buildRules() {
+    // https://webpack.js.org/configuration/module/#modulerules
     let {enableBabel, enableThread, isTsProject, enableResolveCss, enableResolveAsset, enableHash} = this.options
 
     // js解析规则
@@ -474,7 +478,7 @@ export class Webpack5RecommendConfig {
       .exclude.add(/[\\/]node_modules[\\/]/)
       .end()
       .when(enableBabel, (config) => {
-        config.use('babel-loader').loader('babel-loader')
+        config.use('babel-loader').loader('babel-loader').when(!this.hasBabelConfig, this.configDefaultBabelConfig)
       })
       .when(enableThread, (config) => {
         config.use('thread-loader').loader('thread-loader')
@@ -486,7 +490,10 @@ export class Webpack5RecommendConfig {
         .rule('jsx')
         .test(/\.jsx$/)
         .when(enableBabel, (ruleConfig) => {
-          ruleConfig.use('babel-loader').loader('babel-loader')
+          ruleConfig
+            .use('babel-loader')
+            .loader('babel-loader')
+            .when(!this.hasBabelConfig, this.configDefaultBabelConfig)
         })
         .when(enableThread, (ruleConfig) => {
           ruleConfig.use('thread-loader').loader('thread-loader')
@@ -499,7 +506,10 @@ export class Webpack5RecommendConfig {
         .rule('ts/tsx')
         .test(/\.tsx?$/)
         .when(enableBabel, (ruleConfig) => {
-          ruleConfig.use('babel-loader').loader('babel-loader')
+          ruleConfig
+            .use('babel-loader')
+            .loader('babel-loader')
+            .when(!this.hasBabelConfig, this.configDefaultBabelConfig)
         })
         .use('ts-loader')
         .loader('ts-loader')
@@ -529,22 +539,74 @@ export class Webpack5RecommendConfig {
     })
 
     if (enableResolveCss) {
+      // style files regexes
+      let cssRegex = /\.css$/
+      let cssModuleRegex = /\.module\.css$/
+
+      let sassRegex = /\.s[ca]ss$/
+      let sassModuleRegex = /\.module\.s[ca]ss$/
+
+      let lessRegex = /\.less$/
+      let lessModuleRegex = /\.module\.less$/
+
+      let stylusRegex = /\.styl(us)?$/
+      let stylusModuleRegex = /\.module\.styl(us)?$/
+
       // css解析
-      this.getCssLoader(this._config.module.rule('css').test(/\.css$/))
+      this.getCssLoader(
+        this._config.module
+          .rule('css')
+          .test(cssRegex)
+          .when(this.options.enableCssModule, (config) => {
+            config.exclude.add(cssModuleRegex)
+          })
+      )
+      this.options.enableCssModule &&
+        this.getCssLoader(this._config.module.rule('module.css').test(cssModuleRegex), null, true)
 
       // sass解析
       if (this.isInclude('sass')) {
-        this.getCssLoader(this._config.module.rule('sass').test(/\.s[ca]ss$/), 'scss')
+        this.getCssLoader(
+          this._config.module
+            .rule('sass')
+            .test(sassRegex)
+            .when(this.options.enableCssModule, (config) => {
+              config.exclude.add(sassModuleRegex)
+            }),
+          'scss'
+        )
+        this.options.enableCssModule &&
+          this.getCssLoader(this._config.module.rule('module.sass').test(sassModuleRegex), 'scss', true)
       }
 
       // less解析
       if (this.isInclude('less')) {
-        this.getCssLoader(this._config.module.rule('less').test(/\.less$/), 'less')
+        this.getCssLoader(
+          this._config.module
+            .rule('less')
+            .test(lessRegex)
+            .when(this.options.enableCssModule, (config) => {
+              config.exclude.add(lessModuleRegex)
+            }),
+          'less'
+        )
+        this.options.enableCssModule &&
+          this.getCssLoader(this._config.module.rule('module.less').test(lessModuleRegex), 'less', true)
       }
 
       // stylus解析
       if (this.isInclude('stylus')) {
-        this.getCssLoader(this._config.module.rule('stylus').test(/\.styl$/), 'stylus')
+        this.getCssLoader(
+          this._config.module
+            .rule('stylus')
+            .test(stylusRegex)
+            .when(this.options.enableCssModule, (config) => {
+              config.exclude.add(stylusModuleRegex)
+            }),
+          'stylus'
+        )
+        this.options.enableCssModule &&
+          this.getCssLoader(this._config.module.rule('module.stylus').test(stylusModuleRegex), 'stylus', true)
       }
     }
 
@@ -695,6 +757,7 @@ export class Webpack5RecommendConfig {
     }
 
     if (this.isInclude('vue')) {
+      // 配置 vueLoader
       const {VueLoaderPlugin} = this._require('vue-loader')
       this._config.plugin('VueLoaderPlugin').use(VueLoaderPlugin)
     }
@@ -716,6 +779,15 @@ export class Webpack5RecommendConfig {
     this._config.plugin('_webpack.DefinePlugin').use(this._webpack.DefinePlugin, [define])
 
     /**
+     * 自动加载模块，而不必到处 import 或 require
+     */
+    let provide = {}
+    if (this.isInclude('react')) {
+      provide['React'] = 'react'
+    }
+    this._config.plugin('_webpack.ProvidePlugin').use(this._webpack.ProvidePlugin, [provide])
+
+    /**
      * 在监视模式下忽略指定的文件
      * https://webpack.js.org/plugins/watch-ignore-plugin/
      */
@@ -729,7 +801,68 @@ export class Webpack5RecommendConfig {
     return this
   }
 
-  getCssLoader(rule: Rule, cssPreprocessing?: 'less' | 'scss' | 'stylus') {
+  configDefaultBabelConfig = (obj: Use) => {
+    /**
+     * 不存在babel.config.js配置文件时创建一个默认配置
+     *
+     * 依赖项
+     * - @babel/core
+     * - @babel/preset-env
+     * - @babel/plugin-transform-runtime
+     * - core-js
+     *
+     * - @babel/preset-react [react项目必须]
+     */
+    let corejs = {
+      version: 3,
+      proposals: true
+    }
+
+    let presets: [string, any][] = [
+      [
+        '@babel/preset-env', // 可简写：@babel/env
+        {
+          debug: false,
+          modules: false,
+          useBuiltIns: 'usage',
+          ignoreBrowserslistConfig: false,
+          corejs: corejs
+        }
+      ]
+    ]
+
+    let plugins = [
+      [
+        '@babel/plugin-transform-runtime',
+        {
+          corejs: corejs
+        }
+      ]
+    ]
+
+    if (this.isInclude('react')) {
+      // https://babeljs.io/docs/en/babel-preset-react
+      presets.push(['@babel/preset-react', {}])
+    }
+
+    /**
+     * 配置项：
+     * https://babel.docschina.org/docs/en/options/
+     * https://www.npmjs.com/package/babel-loader
+     *
+     * 先执行完所有 Plugin，再执行 Preset。
+     * 多个 Plugin，按照声明次序顺序执行。
+     * 多个 Preset，按照声明次序逆序执行。
+     */
+    obj.options({
+      cacheDirectory: true,
+      comments: true,
+      presets: presets,
+      plugins: plugins
+    })
+  }
+
+  getCssLoader(rule: Rule, cssPreprocessing?: 'less' | 'scss' | 'stylus' | null, modules = false) {
     let {emitCss, enablePostcss} = this.options
 
     rule
@@ -744,6 +877,11 @@ export class Webpack5RecommendConfig {
       )
       .use('css-loader')
       .loader('css-loader')
+      .when(modules, (config) => {
+        config.options({
+          modules: modules
+        })
+      })
       .end()
       .when(enablePostcss, (config) => {
         config.use('postcss-loader').loader('postcss-loader')
@@ -833,9 +971,8 @@ export class Webpack5RecommendConfig {
     return cacheGroups
   }
 
-  checkEnableBabel(isWarn = true) {
+  checkEnableBabel(msg: string, isWarn = true) {
     if (!this.options.skipCheckBabel && !this.options.enableBabel) {
-      const msg = 'Please start Babel in the production environment to compile.'
       if (isWarn) {
         console.warn('[WARN]-' + msg)
       } else {
@@ -886,7 +1023,7 @@ export class Webpack5RecommendConfig {
     this.options.chainWebpack(this._config, this)
     let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
     if (debug) {
-      console.log(JSON.stringify(emitConfig, null, 2))
+      console.log(this._config.toString())
     }
     return emitConfig
   }

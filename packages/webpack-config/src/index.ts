@@ -879,7 +879,11 @@ export class Webpack5RecommendConfig {
       .loader('css-loader')
       .when(modules, (config) => {
         config.options({
-          modules: modules
+          importLoaders: 1,
+          sourceMap: this.isDevelopment,
+          modules: {
+            mode: 'icss'
+          }
         })
       })
       .end()

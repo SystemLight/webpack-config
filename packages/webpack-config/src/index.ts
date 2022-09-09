@@ -4,7 +4,7 @@ import {createRequire} from 'node:module'
 
 import address from 'address'
 import webpack, {type Configuration as WebpackConfiguration} from 'webpack'
-import type {Use, Rule} from 'webpack-chain'
+import type {Rule, Use} from 'webpack-chain'
 import Config from 'webpack-chain'
 import {merge} from 'webpack-merge'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
@@ -16,6 +16,7 @@ import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
 
 import {getCertificate} from './certificate'
+import {getLocalIdent} from './getCSSModuleLocalIdent'
 
 import type {
   AutoVal,
@@ -184,6 +185,7 @@ export class Webpack5RecommendConfig {
       'style-loader'
     ])
     defaultOptions.enableMinimize = this.autoVal(defaultOptions.enableMinimize)
+    defaultOptions.enableCssModule = this.autoVal(defaultOptions.enableCssModule)
     defaultOptions.enableResolveCss = this.autoVal(defaultOptions.enableResolveCss, ['css-loader', 'style-loader'])
     defaultOptions.enableResolveAsset = this.autoVal(defaultOptions.enableResolveAsset)
 
@@ -206,7 +208,7 @@ export class Webpack5RecommendConfig {
       this.checkEnableBabel('Please enable Babel to convert JSX syntax.', false)
     }
     if (this.options.enableBabel) {
-      // 启用react时检查是否需要完成react项目编译
+      // 启用babel时检查是否需要完成react项目编译
       this.checkBabelCompileReact()
     }
     if (this.options.enableSSL) {
@@ -538,6 +540,33 @@ export class Webpack5RecommendConfig {
         .loader('vue-loader')
     })
 
+    // react解析规则
+    let resolveSvg = false
+    this._config.module.when(this.isInclude('react'), (config) => {
+      if (this.isInclude(['file-loader', '@svgr/webpack'])) {
+        config
+          .rule('svg')
+          .set('issuer', {
+            and: [/\.(ts|tsx|js|jsx|md|mdx)$/]
+          })
+          .test(/\.svg$/)
+          .use('@svgr/webpack')
+          .options({
+            // https://react-svgr.com/docs/options/
+            prettier: false,
+            svgo: false,
+            titleProp: true,
+            ref: true
+          })
+          .end()
+          .use('file-loader')
+          .options({
+            name: enableHash ? 'images/[name].[hash:8][ext]' : 'images/[name][ext]'
+          })
+        resolveSvg = true
+      }
+    })
+
     if (enableResolveCss) {
       // style files regexes
       let cssRegex = /\.css$/
@@ -618,11 +647,21 @@ export class Webpack5RecommendConfig {
        */
       this._config.module
         .rule('image')
-        .test(/\.(png|jpe?g|gif|svg)$/)
+        .test(/\.(png|jpe?g|gif)$/)
         .set('type', 'asset')
         .set('generator', {
           filename: enableHash ? 'images/[name].[hash:8][ext]' : 'images/[name][ext]'
         })
+
+      this._config.module.when(!resolveSvg, (config) => {
+        config
+          .rule('svg')
+          .test(/\.svg$/)
+          .set('type', 'asset')
+          .set('generator', {
+            filename: enableHash ? 'images/[name].[hash:8][ext]' : 'images/[name][ext]'
+          })
+      })
 
       /**
        * https://webpack.js.org/guides/asset-modules/
@@ -746,10 +785,7 @@ export class Webpack5RecommendConfig {
         config.plugin('FriendlyErrorsWebpackPlugin').use(FriendlyErrorsWebpackPlugin, [
           {
             compilationSuccessInfo: {
-              messages: [
-                `You application is running here ${this.getUrl()}`,
-                `You application is running here ${this.getUrl(hostIp)}`
-              ]
+              messages: ['App running at:', `- Local: ${this.getUrl()}`, `- Network: ${this.getUrl(hostIp)}`]
             }
           }
         ])
@@ -802,25 +838,18 @@ export class Webpack5RecommendConfig {
   }
 
   configDefaultBabelConfig = (obj: Use) => {
-    /**
-     * 不存在babel.config.js配置文件时创建一个默认配置
-     *
-     * 依赖项
-     * - @babel/core
-     * - @babel/preset-env
-     * - @babel/plugin-transform-runtime
-     * - core-js
-     *
-     * - @babel/preset-react [react项目必须]
-     */
+    let presets: [string, any][] = [] // 预设项
+    let plugins: [string, any][] = [] // 扩展插件
+
     let corejs = {
       version: 3,
       proposals: true
     }
 
-    let presets: [string, any][] = [
-      [
-        '@babel/preset-env', // 可简写：@babel/env
+    if (this.isInclude(['@babel/preset-env', 'core-js'])) {
+      presets.push([
+        // runtime 包含 core-js、regenerator、helper 三部分
+        '@babel/env',
         {
           debug: false,
           modules: false,
@@ -828,31 +857,42 @@ export class Webpack5RecommendConfig {
           ignoreBrowserslistConfig: false,
           corejs: corejs
         }
-      ]
-    ]
+      ])
+    }
 
-    let plugins = [
-      [
-        '@babel/plugin-transform-runtime',
+    if (this.isInclude(['@babel/plugin-transform-runtime', 'core-js'])) {
+      plugins.push([
+        '@babel/transform-runtime',
         {
           corejs: corejs
         }
-      ]
-    ]
+      ])
+    }
 
     if (this.isInclude('react')) {
       // https://babeljs.io/docs/en/babel-preset-react
-      presets.push(['@babel/preset-react', {}])
+      presets.push(['@babel/react', {}])
     }
 
     /**
+     * 不存在 babel.config.js 配置文件时创建一个默认配置
+     *
      * 配置项：
      * https://babel.docschina.org/docs/en/options/
      * https://www.npmjs.com/package/babel-loader
+     * https://mp.weixin.qq.com/s/JPyJ5eVC6w_e-NTMiVHzhg
      *
-     * 先执行完所有 Plugin，再执行 Preset。
-     * 多个 Plugin，按照声明次序顺序执行。
-     * 多个 Preset，按照声明次序逆序执行。
+     * 先执行完所有 plugin，再执行 preset
+     * 多个 plugin，按照声明次序顺序执行
+     * 多个 preset，按照声明次序逆序执行
+     *
+     * 依赖项：
+     * - @babel/core
+     * - @babel/preset-env
+     * - @babel/plugin-transform-runtime
+     * - core-js
+     *
+     * - @babel/preset-react [react项目启用]
      */
     obj.options({
       cacheDirectory: true,
@@ -877,15 +917,36 @@ export class Webpack5RecommendConfig {
       )
       .use('css-loader')
       .loader('css-loader')
-      .when(modules, (config) => {
-        config.options({
-          importLoaders: 1,
-          sourceMap: this.isDevelopment,
-          modules: {
-            mode: 'icss'
-          }
-        })
-      })
+      .when(
+        modules,
+        (config) => {
+          /**
+           * https://github.com/webpack-contrib/css-loader
+           * https://juejin.cn/post/6992428132263264264
+           *
+           * - :local 局部作用域
+           * - :global 全局作用域
+           */
+          config.options({
+            importLoaders: 0,
+            sourceMap: this.isDevelopment,
+            modules: {
+              mode: 'local',
+              getLocalIdent: getLocalIdent
+            }
+          })
+        },
+        (config) => {
+          config.options({
+            importLoaders: 0,
+            sourceMap: this.isDevelopment,
+            modules: {
+              // 只是在标准 CSS 中额外增加了两个的伪选择器 :import 和 :export
+              mode: 'icss'
+            }
+          })
+        }
+      )
       .end()
       .when(enablePostcss, (config) => {
         config.use('postcss-loader').loader('postcss-loader')
@@ -997,9 +1058,11 @@ export class Webpack5RecommendConfig {
     } else if (value === '!auto') {
       value = this.isDevelopment
     } else if (value === '^auto') {
-      value = dependencies.every(this.isInclude.bind(this))
+      // 无需验证依赖
+      return this.isInclude(dependencies)
     }
-    if (value && !dependencies.every(this.isInclude.bind(this))) {
+    // 启用并验证依赖
+    if (value && !this.isInclude(dependencies)) {
       throw TypeError('missing dependencies ' + dependencies)
     }
     return !!value
@@ -1015,7 +1078,10 @@ export class Webpack5RecommendConfig {
       .replace(/-(\w)/g, (_, $1) => $1.toUpperCase())
   }
 
-  isInclude(libraryName) {
+  isInclude(libraryName: string | string[]) {
+    if (Array.isArray(libraryName)) {
+      return libraryName.every((v) => this._dependencies.includes(v))
+    }
     return this._dependencies.includes(libraryName)
   }
 

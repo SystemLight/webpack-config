@@ -5,29 +5,48 @@ import typescript from '@rollup/plugin-typescript'
 import del from 'rollup-plugin-delete'
 
 let {dependencies = {}, devDependencies = {}} = require('./package.json')
+let external = [
+  ...Object.keys(dependencies),
+  ...Object.keys(devDependencies),
+  /package.json/,
+  /node-forge/
+]
+
+let commonPlugins = [
+  nodeResolve(),
+  commonjs(),
+  typescript({
+    module: 'ESNext'
+  })
+]
 
 /**
  * https://rollupjs.org/guide/en/#command-line-flags
  */
-export default defineConfig({
-  input: 'src/index.ts',
-  external: [
-    ...Object.keys(dependencies),
-    ...Object.keys(devDependencies),
-    /package.json/,
-    /node-forge/
-  ],
-  output: {
-    dir: 'dist/',
-    format: 'cjs',
-    sourcemap: false
+export default defineConfig([
+  {
+    input: 'src/index.ts',
+    external: external,
+    output: {
+      dir: 'dist/',
+      format: 'cjs',
+      sourcemap: false
+    },
+    plugins: [
+      ...commonPlugins,
+      del({targets: 'dist/*'})
+    ]
   },
-  plugins: [
-    nodeResolve(),
-    commonjs(),
-    typescript({
-      module: 'ESNext'
-    }),
-    del({targets: 'dist/*'})
-  ]
-})
+  {
+    input: 'src/bin/cli.ts',
+    external: external,
+    output: {
+      dir: 'dist/',
+      format: 'cjs',
+      sourcemap: false
+    },
+    plugins: [
+      ...commonPlugins
+    ]
+  }
+])

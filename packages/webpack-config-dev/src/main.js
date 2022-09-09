@@ -1,21 +1,7 @@
-// import axios from 'axios'
+import {createRoot} from 'react-dom/client'
+import React from 'react'
 
-// import(/* webpackPrefetch: true */ './foo').then((foo)=>{
-//   console.log(foo)
-// })
-// // axios.get('/api/demo').then(({data}) => {
-// //   console.log('hello', data)
-// // })
+import App from './App'
 
-let a = () => import(/* webpackChunkName: "axios" */ /* webpackPrefetch: true */ 'axios')
-let v = () => import(/* webpackChunkName: "vue" */ /* webpackPrefetch: true */ 'vue')
-
-let btn = document.createElement('button')
-btn.innerText = '按钮'
-btn.onclick = function () {
-  a().then((foo) => {
-    console.log(foo)
-  })
-}
-
-document.body.append(btn)
+const root = createRoot(document.getElementById('root'))
+root.render(React.createElement(App))

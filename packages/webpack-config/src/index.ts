@@ -14,6 +14,7 @@ import CopyWebpackPlugin from 'copy-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
+import chalk from 'chalk'
 
 import {getCertificate} from './certificate'
 import {getLocalIdent} from './getCSSModuleLocalIdent'
@@ -459,8 +460,8 @@ export class Webpack5RecommendConfig {
       }
     }
 
+    this._config.optimization.minimize(enableMinimize)
     if (enableMinimize) {
-      this._config.optimization.minimize(enableMinimize)
       this._config.optimization
         .minimizer('TerserWebpackPlugin')
         .use(TerserWebpackPlugin, [{extractComments: false} as any])
@@ -518,7 +519,7 @@ export class Webpack5RecommendConfig {
         .options({
           // https://github.com/TypeStrong/ts-loader#happypackmode
           happyPackMode: enableThread,
-          transpileOnly: true,
+          transpileOnly: true, // 不做类型检查,建议与 fork-ts-checker-webpack-plugin 一起使用进行完整的类型检查
           appendTsSuffixTo: this.isInclude('vue') ? [/\.vue$/] : [],
           compilerOptions: {
             jsx: !enableBabel && this.isInclude('react') ? 'react-jsxdev' : 'preserve',
@@ -967,7 +968,8 @@ export class Webpack5RecommendConfig {
   }
 
   getSplitChunksGroup() {
-    // 内置定义Chunk切割分离规则
+    // 内置定义 chunk 切割分离规则
+    // 可以通过 webpack --mode development --analyze 进行代码块分析
     let cacheGroups = {
       common: {
         name: 'common',
@@ -987,6 +989,7 @@ export class Webpack5RecommendConfig {
         tailwind: {
           name: 'tailwind',
           test: /tailwind.css$/,
+          chunks: 'all',
           enforce: true
         }
       })
@@ -997,7 +1000,8 @@ export class Webpack5RecommendConfig {
         react: {
           name: 'react',
           test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)/,
-          chunks: 'all'
+          chunks: 'all',
+          enforce: true
         }
       })
     }
@@ -1007,7 +1011,8 @@ export class Webpack5RecommendConfig {
         antd: {
           name: 'antd',
           test: /[\\/]node_modules[\\/](@ant-design|antd)/,
-          chunks: 'all'
+          chunks: 'all',
+          enforce: true
         }
       })
     }
@@ -1028,7 +1033,8 @@ export class Webpack5RecommendConfig {
         elementUI: {
           name: 'element-plus',
           test: /[\\/]node_modules[\\/](element-plus)/,
-          chunks: 'all'
+          chunks: 'all',
+          enforce: true
         }
       })
     }
@@ -1039,7 +1045,7 @@ export class Webpack5RecommendConfig {
   checkEnableBabel(msg: string, isWarn = true) {
     if (!this.options.skipCheckBabel && !this.options.enableBabel) {
       if (isWarn) {
-        console.warn('[WARN]-' + msg)
+        console.log(`${chalk.bgYellow.red('[WARN]')} - ${chalk.yellow(msg)}`)
       } else {
         throw TypeError(msg)
       }

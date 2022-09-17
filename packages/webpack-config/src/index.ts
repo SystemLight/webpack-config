@@ -821,6 +821,7 @@ export class Webpack5RecommendConfig {
     let provide = {}
     if (this.isInclude('react')) {
       provide['React'] = 'react'
+      // TODO: 热重载（HMR）支持 https://github.com/pmmmwh/react-refresh-webpack-plugin
     }
     this._config.plugin('_webpack.ProvidePlugin').use(this._webpack.ProvidePlugin, [provide])
 
@@ -850,7 +851,7 @@ export class Webpack5RecommendConfig {
     if (this.isInclude(['@babel/preset-env', 'core-js'])) {
       presets.push([
         // runtime 包含 core-js、regenerator、helper 三部分
-        '@babel/env',
+        '@babel/env', // @babel/preset-env
         {
           debug: false,
           modules: false,
@@ -863,7 +864,7 @@ export class Webpack5RecommendConfig {
 
     if (this.isInclude(['@babel/plugin-transform-runtime', 'core-js'])) {
       plugins.push([
-        '@babel/transform-runtime',
+        '@babel/transform-runtime', // @babel/plugin-transform-runtime
         {
           corejs: corejs
         }
@@ -872,7 +873,7 @@ export class Webpack5RecommendConfig {
 
     if (this.isInclude('react')) {
       // https://babeljs.io/docs/en/babel-preset-react
-      presets.push(['@babel/react', {}])
+      presets.push(['@babel/react', {}]) // @babel/preset-react
     }
 
     /**

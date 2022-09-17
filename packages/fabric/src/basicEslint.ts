@@ -97,11 +97,11 @@ export function getEslintConfig(
     // js解析器：https://www.npmjs.com/package/@babel/eslint-parser
     eslintConfig.parser = '@babel/eslint-parser'
 
-    let presets = ['@babel/preset-env']
+    let presets = ['@babel/env'] // @babel/preset-env
     let plugins = [
       // 装饰器属性，https://babel.dev/docs/en/babel-plugin-proposal-decorators
       [
-        '@babel/plugin-proposal-decorators',
+        '@babel/proposal-decorators', // @babel/plugin-proposal-decorators
         {
           legacy: true
         }
@@ -109,7 +109,8 @@ export function getEslintConfig(
     ]
 
     if (_isReactProject) {
-      presets.push('@babel/preset-react') // js开发解析react jsx
+      // js开发解析react jsx
+      presets.push('@babel/react') // @babel/preset-react
     }
 
     eslintConfig.parserOptions = {

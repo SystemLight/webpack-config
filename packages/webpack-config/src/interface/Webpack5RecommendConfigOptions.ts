@@ -51,7 +51,7 @@ export interface DefaultOptions {
 
   title: string | null // 弹出html文件title标签内容
   publicPath: string // public文件路径
-  isNodeLibrary: boolean // 是否是node库
+  isNodeEnv: boolean // 是否是node库
   libraryName: LibraryName // 库打包配置
   externals: string[] // webpack externals
   define: any // 定义可以在输出目标文件访问的环境变量

@@ -113,7 +113,7 @@ export class Webpack5RecommendConfig {
 
       title: null,
       publicPath: '/',
-      isNodeLibrary: false,
+      isNodeEnv: false,
       libraryName: false,
       externals: [],
       define: {},
@@ -243,7 +243,11 @@ export class Webpack5RecommendConfig {
     }
 
     this._config.merge(basicConfig).when(this.isDevelopment, (config) => {
-      config.target('web')
+      if (this.options.isNodeEnv) {
+        config.target('node')
+      } else {
+        config.target('web')
+      }
     })
 
     return this
@@ -292,7 +296,7 @@ export class Webpack5RecommendConfig {
             name: libraryName, // 如果不想要名称可以设置null
             // https://webpack.js.org/configuration/output/#outputlibrarytype
             type: 'umd2',
-            export: 'default', // 如果想导出空间中所有内容，delete config.output.library.export
+            export: 'default', // 如果想导出空间中所有内容，删除掉 output.library.export 选项
             umdNamedDefine: true,
             auxiliaryComment: {
               root: 'Root Export',
@@ -308,22 +312,31 @@ export class Webpack5RecommendConfig {
   }
 
   buildExternals() {
-    this._config.when(this.options.externals.includes('react'), (config) => {
-      config.externals({
-        react: {
-          root: 'React',
-          commonjs: 'react',
-          commonjs2: 'react',
-          amd: 'react'
-        },
-        'react-dom': {
-          root: 'ReactDOM',
-          commonjs: 'react-dom',
-          commonjs2: 'react-dom',
-          amd: 'react-dom'
-        }
-      })
-    })
+    let externalsPresets: WebpackConfiguration['externalsPresets'] = {}
+    let externals: WebpackConfiguration['externals'] = {}
+
+    if (this.options.externals.includes('node') || this.options.isNodeEnv) {
+      externalsPresets['node'] = true
+    }
+
+    if (this.options.externals.includes('react')) {
+      externals['react'] = {
+        root: 'React',
+        commonjs: 'react',
+        commonjs2: 'react',
+        amd: 'react'
+      }
+
+      externals['react-dom'] = {
+        root: 'ReactDOM',
+        commonjs: 'react-dom',
+        commonjs2: 'react-dom',
+        amd: 'react-dom'
+      }
+    }
+
+    this._config.set('externalsPresets', externalsPresets)
+    this._config.externals(externals)
 
     return this
   }

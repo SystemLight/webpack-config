@@ -143,7 +143,7 @@ importers:
     specifiers:
       '@babel/core': ^7.19.0
       '@babel/preset-react': ^7.18.6
-      '@systemlight/webpack-config': workspace:^6.3.2
+      '@systemlight/webpack-config': workspace:^6.3.3
       babel-loader: ^8.2.5
       css-loader: ^6.7.1
       react: ^18.2.0

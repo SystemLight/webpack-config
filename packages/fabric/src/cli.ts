@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import {copyFileSync, writeFileSync} from 'node:fs'
 import {resolve} from 'node:path'
 

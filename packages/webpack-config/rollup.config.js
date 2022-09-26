@@ -3,6 +3,7 @@ import {nodeResolve} from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import del from 'rollup-plugin-delete'
+import shebang from 'rollup-plugin-preserve-shebang'
 
 let {dependencies = {}, devDependencies = {}} = require('./package.json')
 let external = [
@@ -46,7 +47,8 @@ export default defineConfig([
       sourcemap: false
     },
     plugins: [
-      ...commonPlugins
+      ...commonPlugins,
+      shebang()
     ]
   }
 ])

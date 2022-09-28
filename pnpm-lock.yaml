@@ -64,6 +64,7 @@ importers:
       '@types/prettier': ^2.7.1
       chalk: 4.1.2
       commander: ^9.4.0
+      crlf: ^1.1.1
       eslint: ^8.24.0
       prettier: ^2.7.1
       rollup: ^2.79.1
@@ -81,6 +82,7 @@ importers:
       '@rollup/plugin-typescript': 8.5.0_5q64ijqsuisqe52alrh6v6njki
       '@types/node': 18.7.21
       '@types/prettier': 2.7.1
+      crlf: 1.1.1
       eslint: 8.24.0
       prettier: 2.7.1
       rollup: 2.79.1
@@ -103,6 +105,7 @@ importers:
       chalk: 4.1.2
       commander: ^9.4.0
       copy-webpack-plugin: ^11.0.0
+      crlf: ^1.1.1
       html-webpack-plugin: ^5.5.0
       loader-utils: ^3.2.0
       magic-string: ^0.26.4
@@ -138,6 +141,7 @@ importers:
       '@rollup/plugin-typescript': 8.5.0_5q64ijqsuisqe52alrh6v6njki
       '@types/mockjs': 1.0.7
       '@types/node': 18.7.21
+      crlf: 1.1.1
       magic-string: 0.26.4
       rollup: 2.79.1
       rollup-plugin-delete: 2.0.0
@@ -1924,6 +1928,14 @@ packages:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
     dev: true
 
+  /crlf/1.1.1:
+    resolution: {integrity: sha512-L6QfggxXr2vR+trc4LIdrmxWwV88uy2zzFslw1vV/J4WlyeoENlFr+t5V+1Ijq5AV0SexqLEU8GYvzL8Dc2y8Q==}
+    hasBin: true
+    dependencies:
+      glub: 1.0.3
+      transform-file: 1.0.1
+    dev: true
+
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
@@ -2659,6 +2671,16 @@ packages:
   /glob-to-regexp/0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
 
+  /glob/5.0.15:
+    resolution: {integrity: sha512-c9IPMazfRITpmAAKi22dK1VKxGDX9ehhqfABDriL/lzO92xcUKEJPQHrVA/2YHSNFB4iFlykVmWvwo48nr3OxA==}
+    dependencies:
+      inflight: 1.0.6
+      inherits: 2.0.4
+      minimatch: 3.1.2
+      once: 1.4.0
+      path-is-absolute: 1.0.1
+    dev: true
+
   /glob/7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
     dependencies:
@@ -2758,6 +2780,14 @@ packages:
 
   /globjoin/0.1.4:
     resolution: {integrity: sha512-xYfnw62CKG8nLkZBfWbhWwDw02CHty86jfPcc2cr3ZfeuK9ysoVPPEUxf21bAD/rWAgk52SuBrLJlefNy8mvFg==}
+    dev: true
+
+  /glub/1.0.3:
+    resolution: {integrity: sha512-jc6aFV4ndsH/3aCwOQ+F4hS9AHdmwA5RS3uiFeLu19eNQ9EQeu9bNFJdNlShIxwYMS9CZkCpEC4vY5ZIgppN7Q==}
+    hasBin: true
+    dependencies:
+      glob: 5.0.15
+      minimist: 1.2.6
     dev: true
 
   /graceful-fs/4.2.10:
@@ -3711,6 +3741,11 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
       word-wrap: 1.2.3
+    dev: true
+
+  /os-tmpdir/1.0.2:
+    resolution: {integrity: sha512-D2FR03Vir7FIu45XBY20mTb+/ZSWB00sjU9jdQXt83gDrI4Ztz5Fs7/yy74g2N5SVQY4xY1qDr4rNddwYRVX0g==}
+    engines: {node: '>=0.10.0'}
     dev: true
 
   /p-limit/2.3.0:
@@ -4780,6 +4815,12 @@ packages:
   /toidentifier/1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
+
+  /transform-file/1.0.1:
+    resolution: {integrity: sha512-mAglTF9+3umkYu8lhseHW3/465Gt1HyLDrlnqrK9ZAa+hMzzkgsCIZzlfHv9JBL2480AOxLoU8WK9RjCeLhOvg==}
+    dependencies:
+      os-tmpdir: 1.0.2
+    dev: true
 
   /trim-newlines/3.0.1:
     resolution: {integrity: sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==}

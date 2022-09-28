@@ -1,12 +1,12 @@
 {
   "name": "@systemlight/fabric",
-  "version": "5.1.6",
+  "version": "5.1.7",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "prepublish": "pnpm run build",
+    "prepublish": "pnpm run build && crlf --set=LF dist/**/cli.js",
     "build": "rollup -c"
   },
   "keywords": [
@@ -60,6 +60,7 @@
     "@rollup/plugin-typescript": "^8.5.0",
     "@types/node": "^18.7.21",
     "@types/prettier": "^2.7.1",
+    "crlf": "^1.1.1",
     "eslint": "^8.24.0",
     "prettier": "^2.7.1",
     "rollup": "^2.79.1",

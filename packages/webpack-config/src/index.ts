@@ -265,7 +265,8 @@ export class Webpack5RecommendConfig {
         publicPath: publicPath,
         compareBeforeEmit: false, // 在打包输出文件之前，检查文件在目录中是否已经存在，如果存在就不再新写入一个相同的文件
         iife: true,
-        clean: true
+        clean: true,
+        pathinfo: false // 输出结果不携带路径信息
       }
     }
 
@@ -348,7 +349,9 @@ export class Webpack5RecommendConfig {
       extensions: ['.js'],
       alias: {
         '@': srcPath
-      }
+      },
+      // 用于配置 npm link 是否生效，禁用可提升编译速度
+      symlinks: false
     }
 
     this._config.resolve.merge(resolveOptions)
@@ -479,6 +482,10 @@ export class Webpack5RecommendConfig {
         .minimizer('TerserWebpackPlugin')
         .use(TerserWebpackPlugin, [{extractComments: false} as any])
     }
+
+    this._config.cache({
+      type: 'filesystem'
+    })
 
     return this
   }

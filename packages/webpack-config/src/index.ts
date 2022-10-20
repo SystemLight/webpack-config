@@ -497,7 +497,7 @@ export class Webpack5RecommendConfig {
     // js解析规则
     this._config.module
       .rule('js')
-      .test(/\.js$/)
+      .test(/\.js$/i)
       .exclude.add(/[\\/]node_modules[\\/]/)
       .end()
       .when(enableBabel, (config) => {
@@ -511,7 +511,7 @@ export class Webpack5RecommendConfig {
     this._config.module.when(this.isInclude('react'), (config) => {
       config
         .rule('jsx')
-        .test(/\.jsx$/)
+        .test(/\.jsx$/i)
         .when(enableBabel, (ruleConfig) => {
           ruleConfig
             .use('babel-loader')
@@ -527,7 +527,7 @@ export class Webpack5RecommendConfig {
     this._config.module.when(isTsProject, (config) => {
       config
         .rule('ts/tsx')
-        .test(/\.tsx?$/)
+        .test(/\.tsx?$/i)
         .when(enableBabel, (ruleConfig) => {
           ruleConfig
             .use('babel-loader')
@@ -556,7 +556,7 @@ export class Webpack5RecommendConfig {
     this._config.module.when(this.isInclude('vue'), (config) => {
       config
         .rule('vue')
-        .test(/\.vue$/)
+        .test(/\.vue$/i)
         .use('vue-loader')
         .loader('vue-loader')
     })
@@ -570,7 +570,7 @@ export class Webpack5RecommendConfig {
           .set('issuer', {
             and: [/\.(ts|tsx|js|jsx|md|mdx)$/]
           })
-          .test(/\.svg$/)
+          .test(/\.svg$/i)
           .use('@svgr/webpack')
           .options({
             // https://react-svgr.com/docs/options/
@@ -590,17 +590,17 @@ export class Webpack5RecommendConfig {
 
     if (enableResolveCss) {
       // style files regexes
-      let cssRegex = /\.css$/
-      let cssModuleRegex = /\.module\.css$/
+      let cssRegex = /\.css$/i
+      let cssModuleRegex = /\.module\.css$/i
 
-      let sassRegex = /\.s[ca]ss$/
-      let sassModuleRegex = /\.module\.s[ca]ss$/
+      let sassRegex = /\.s[ca]ss$/i
+      let sassModuleRegex = /\.module\.s[ca]ss$/i
 
-      let lessRegex = /\.less$/
-      let lessModuleRegex = /\.module\.less$/
+      let lessRegex = /\.less$/i
+      let lessModuleRegex = /\.module\.less$/i
 
-      let stylusRegex = /\.styl(us)?$/
-      let stylusModuleRegex = /\.module\.styl(us)?$/
+      let stylusRegex = /\.styl(us)?$/i
+      let stylusModuleRegex = /\.module\.styl(us)?$/i
 
       // css解析
       this.getCssLoader(
@@ -668,7 +668,7 @@ export class Webpack5RecommendConfig {
        */
       this._config.module
         .rule('image')
-        .test(/\.(png|jpe?g|gif)$/)
+        .test(/\.(png|jpe?g|gif)$/i)
         .set('type', 'asset')
         .set('generator', {
           filename: enableHash ? 'images/[name].[hash:8][ext]' : 'images/[name][ext]'
@@ -677,7 +677,7 @@ export class Webpack5RecommendConfig {
       this._config.module.when(!resolveSvg, (config) => {
         config
           .rule('svg')
-          .test(/\.svg$/)
+          .test(/\.svg$/i)
           .set('type', 'asset')
           .set('generator', {
             filename: enableHash ? 'images/[name].[hash:8][ext]' : 'images/[name][ext]'
@@ -691,7 +691,7 @@ export class Webpack5RecommendConfig {
        */
       this._config.module
         .rule('media')
-        .test(/\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/)
+        .test(/\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/i)
         .set('type', 'asset')
         .set('generator', {
           filename: enableHash ? 'media/[name].[hash:8][ext]' : 'images/[name][ext]'
@@ -704,7 +704,7 @@ export class Webpack5RecommendConfig {
        */
       this._config.module
         .rule('font')
-        .test(/\.(woff|woff2|eot|ttf|otf)$/)
+        .test(/\.(woff|woff2|eot|ttf|otf)$/i)
         .set('type', 'asset')
         .set('generator', {
           filename: enableHash ? 'font/[name].[hash:8][ext]' : 'images/[name][ext]'

@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import {createRequire} from 'node:module'
 
 import address from 'address'
-import webpack, {type Configuration as WebpackConfiguration} from 'webpack'
+import webpack, {type Configuration as WebpackConfiguration, type optimize} from 'webpack'
 import type {Rule, Use} from 'webpack-chain'
 import Config from 'webpack-chain'
 import {merge} from 'webpack-merge'
@@ -16,15 +16,17 @@ import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
 import chalk from 'chalk'
 
-import {getCertificate} from './certificate'
-import {getLocalIdent} from './getCSSModuleLocalIdent'
-
 import type {
   AutoVal,
   DefaultOptions,
   Options,
   Webpack5RecommendConfigOptions
 } from './interface/Webpack5RecommendConfigOptions'
+import {getCertificate} from './certificate'
+import {getLocalIdent} from './getCSSModuleLocalIdent'
+
+type SplitChunksOptions = NonNullable<ConstructorParameters<typeof optimize.SplitChunksPlugin>[0]>
+type CacheGroups = SplitChunksOptions['cacheGroups']
 
 export class Webpack5RecommendConfig {
   public mode: 'development' | 'production'
@@ -71,6 +73,11 @@ export class Webpack5RecommendConfig {
    * !前缀 将禁用所有已配置的 normal loader(普通 loader)
    * !!前缀 将禁用所有已配置的 loader（preLoader, loader, postLoader）
    * -!前缀 将禁用所有已配置的 preLoader 和 loader，但是不禁用 postLoaders
+   *
+   * hash类别
+   * [fullhash]: 所有文件的哈希值，一个文件变化所有使用hash的bundle都会重新输出
+   * [chunkhash]: 根据不同的入口文(Entry)进行依赖文件解析，构建对应的chunk，生成对应的哈希值
+   * [contenthash]: 输出文件内容的 md4-hash，防止抽离的Css文件也随JS做重新输出
    */
   constructor(
     mode?: 'development' | 'production',
@@ -276,9 +283,9 @@ export class Webpack5RecommendConfig {
         enableHash,
         (config) => {
           config.output.merge({
-            filename: '[name].bundle.[chunkhash:8].js',
-            chunkFilename: '[name].chunk.[chunkhash:8].js',
-            assetModuleFilename: 'assets/[name][hash:8][ext]'
+            filename: '[name].bundle.[chunkhash:8].js', // 由配置拆分出来的文件
+            chunkFilename: '[name].chunk.[chunkhash:8].js', // 模块动态导入依赖拆分出的文件
+            assetModuleFilename: 'assets/[name][hash:8][ext]' // The same as output.filename but for Asset Modules
           })
         },
         (config) => {
@@ -461,15 +468,7 @@ export class Webpack5RecommendConfig {
        * 1. 模块是chunk
        * 2. 满足拆分条件
        */
-      this._config.optimization.splitChunks({
-        /**
-         * all: 所有方式引入的Module中的符合手动切割Chunk规则的Module都会被解析分离
-         * initial: 异步引入的Module中符合手动切割Chunk规则的Module不做解析分离
-         * async: 同步引入的Module中符合手动切割Chunk规则的Module不做解析分离
-         */
-        chunks: 'all',
-        cacheGroups: this.getSplitChunksGroup()
-      })
+      this._config.optimization.splitChunks(this.getDefaultSplitChunks())
 
       if (this.isProduction) {
         this._config.optimization.runtimeChunk('single')
@@ -493,6 +492,14 @@ export class Webpack5RecommendConfig {
   buildRules() {
     // https://webpack.js.org/configuration/module/#modulerules
     let {enableBabel, enableThread, isTsProject, enableResolveCss, enableResolveAsset, enableHash} = this.options
+
+    // 解析选项统一配置
+    this._config.module.set('parser', {
+      javascript: {
+        // Enable magic comments support for CommonJS
+        commonjsMagicComments: true
+      }
+    })
 
     // js解析规则
     this._config.module
@@ -752,6 +759,17 @@ export class Webpack5RecommendConfig {
           inject: 'body',
           scriptLoading: 'defer', // blocking | defer | module 脚本加载模式
           hash: false,
+          // possible meta tags
+          // https://github.com/joshbuchea/HEAD
+          // use: <%= htmlWebpackPlugin.tags.headTags %>
+          meta: {
+            charset: {charset: 'UTF-8'},
+            'Content-Type': {'http-equiv': 'Content-Type', content: 'text/html; charset=utf-8'},
+            'X-UA-Compatible': {'http-equiv': 'X-UA-Compatible', content: 'IE=edge'},
+            'x5-fullscreen': 'false',
+            'full-screen': 'no',
+            viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no'
+          },
           // https://github.com/terser/html-minifier-terser
           minify: this.isProduction
             ? {
@@ -924,6 +942,12 @@ export class Webpack5RecommendConfig {
     })
   }
 
+  configSplitChunks(buildOptions: (options: SplitChunksOptions) => void) {
+    let splitChunksOptions = this.getDefaultSplitChunks()
+    buildOptions(splitChunksOptions)
+    this._config.optimization.splitChunks(splitChunksOptions)
+  }
+
   getCssLoader(rule: Rule, cssPreprocessing?: 'less' | 'scss' | 'stylus' | null, modules = false) {
     let {emitCss, enablePostcss} = this.options
 
@@ -988,14 +1012,25 @@ export class Webpack5RecommendConfig {
     return rule
   }
 
-  getSplitChunksGroup() {
+  getDefaultSplitChunks(): SplitChunksOptions {
+    return {
+      /**
+       * all: 所有方式引入的Module中的符合手动切割Chunk规则的Module都会被解析分离
+       * initial: 异步引入的Module中符合手动切割Chunk规则的Module不做解析分离
+       * async: 同步引入的Module中符合手动切割Chunk规则的Module不做解析分离
+       */
+      chunks: 'all',
+      cacheGroups: this.getSplitChunksGroup()
+    }
+  }
+
+  getSplitChunksGroup(): CacheGroups {
     // 内置定义 chunk 切割分离规则
     // 可以通过 webpack --mode development --analyze 进行代码块分析
-    let cacheGroups = {
+    let cacheGroups: CacheGroups = {
       common: {
         name: 'common',
         minChunks: 2,
-        reuseExistingChunk: true,
         priority: -20
       },
       vendors: {
@@ -1005,57 +1040,67 @@ export class Webpack5RecommendConfig {
       }
     }
 
+    // tailwindcss chunk
     if (this.isInclude('tailwindcss')) {
       Object.assign(cacheGroups, {
         tailwind: {
           name: 'tailwind',
           test: /tailwind.css$/,
           chunks: 'all',
-          enforce: true
+          enforce: true,
+          priority: 0
         }
       })
     }
 
+    // react chunk
     if (this.isInclude('react')) {
       Object.assign(cacheGroups, {
         react: {
           name: 'react',
           test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)/,
           chunks: 'all',
-          enforce: true
+          enforce: true,
+          priority: 0
         }
       })
     }
 
+    // antd chunk
     if (this.isInclude('antd')) {
       cacheGroups = Object.assign(cacheGroups, {
         antd: {
           name: 'antd',
           test: /[\\/]node_modules[\\/](@ant-design|antd)/,
           chunks: 'all',
-          enforce: true
+          enforce: true,
+          priority: 0
         }
       })
     }
 
+    // vue chunk
     if (this.isInclude('vue')) {
       Object.assign(cacheGroups, {
         vue: {
           name: 'vue',
           test: /[\\/]node_modules[\\/](@?vue|vue-router|vuex)/,
           chunks: 'all',
-          enforce: true
+          enforce: true,
+          priority: 0
         }
       })
     }
 
+    // element-plus chunk
     if (this.isInclude('element-plus')) {
       Object.assign(cacheGroups, {
         elementUI: {
           name: 'element-plus',
           test: /[\\/]node_modules[\\/](element-plus)/,
           chunks: 'all',
-          enforce: true
+          enforce: true,
+          priority: 0
         }
       })
     }
@@ -1120,7 +1165,7 @@ export class Webpack5RecommendConfig {
     this.options.chainWebpack(this._config, this)
     let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
     if (debug) {
-      console.log(this._config.toString())
+      console.log('%o', emitConfig)
     }
     return emitConfig
   }

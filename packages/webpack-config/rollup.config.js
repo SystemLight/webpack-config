@@ -17,6 +17,7 @@ let commonPlugins = [
   nodeResolve(),
   commonjs(),
   typescript({
+    exclude: ['tests/**/*'],
     module: 'ESNext'
   })
 ]

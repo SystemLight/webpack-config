@@ -9,7 +9,8 @@
     "lint:eslint": "eslint --fix --ext ts \"packages/*/src/**/*.ts\"",
     "build:fabric": "pnpm -C packages/fabric build",
     "build:mockserver": "pnpm -C packages/webpack-config-mockserver build",
-    "dev:server": "pnpm -C packages/webpack-config-dev serve"
+    "dev:server": "pnpm -C packages/webpack-config-dev serve",
+    "dev:build": "pnpm -C packages/webpack-config build && pnpm -C packages/webpack-config-dev build"
   },
   "workspaces": [
     "packages/*"

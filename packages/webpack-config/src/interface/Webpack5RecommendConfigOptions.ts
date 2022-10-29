@@ -1,10 +1,13 @@
-import type {Configuration} from 'webpack'
-
+import type {Configuration, optimize, WebpackOptionsNormalized} from 'webpack'
 import Config from 'webpack-chain'
 
-type LibraryName = boolean | string | string[]
+export type LibraryName = boolean | string | string[]
 
-type ConvertRequiredType<T, TC, TR> = {
+export interface Dict {
+  [key: string]: any
+}
+
+export type ConvertRequiredType<T, TC, TR> = {
   [P in keyof T]: T[P] extends TC ? TR : T[P]
 }
 
@@ -15,6 +18,12 @@ type ConvertRequiredType<T, TC, TR> = {
  * - boolean: 指定永久为 true/false
  */
 export type AutoVal = 'auto' | '!auto' | '^auto' | boolean
+
+export type SplitChunksOptions = NonNullable<ConstructorParameters<typeof optimize.SplitChunksPlugin>[0]>
+export type CacheGroups = SplitChunksOptions['cacheGroups']
+export type WebpackConfiguration = Configuration & {
+  devServer?: WebpackOptionsNormalized['devServer']
+}
 
 // wcf options - 所有配置项都是智能检测环境生成默认值，无特殊要求不需要配置
 export interface DefaultOptions {
@@ -52,7 +61,8 @@ export interface DefaultOptions {
   title: string | null // 弹出html文件title标签内容
   publicPath: string // public文件路径
   isNodeEnv: boolean // 是否是node库
-  libraryName: LibraryName // 库打包配置
+  isPackLibrary: boolean // 是否作为库函数打包
+  libraryName: LibraryName // 作为库函数包默认配置
   externals: string[] // webpack externals
   define: any // 定义可以在输出目标文件访问的环境变量
   skipCheckBabel: boolean // 是否强制跳过babel启用情况检测，当你真正确认自己不需要babel时，可以跳过警告
@@ -60,7 +70,7 @@ export interface DefaultOptions {
   port: number // 开发服务器端口号
   proxyHostAndPort: [string, number] | null // 代理地址和端口号，默认转发路径为 /api
 
-  configureWebpack: Configuration // webpack config
+  configureWebpack: WebpackConfiguration // webpack config
   chainWebpack: (config: Config, context: any) => void // webpack chain config
 }
 

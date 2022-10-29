@@ -16,13 +16,17 @@
     "moduleResolution": "Node",
     "allowJs": false,
     "resolveJsonModule": false,
-    // ---
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
     "noEmit": false,
     "outDir": "dist/",
     "declaration": true,
     "sourceMap": false,
     "removeComments": false,
-    // ---
     "strict": true,
     "noImplicitAny": false,
     "strictNullChecks": true,
@@ -31,20 +35,12 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    // ---
-    // 忽略所有的声明文件（ *.d.ts）的类型检查，跳过库检查
     "skipLibCheck": true,
-    // 忽略库的默认声明文件的类型检查
     "skipDefaultLibCheck": true,
-    // 将每个文件作为单独的模块进行传输，文件必须声明导出
     "isolatedModules": false,
-    // 阻止 noImplicitAny 对缺少索引签名的索引对象报错
     "suppressImplicitAnyIndexErrors": true,
-    // 允许从没有默认导出的模块进行默认导入
     "allowSyntheticDefaultImports": true,
-    // 通过为所有导入创建命名空间对象，实现CommonJS和ES模块之间的互操作性，需要启用allowSyntheticDefaultImports
     "esModuleInterop": true,
-    // 不允许对同一文件的大小写不一致的引用
     "forceConsistentCasingInFileNames": true
   }
 }

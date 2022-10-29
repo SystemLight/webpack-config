@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import {createRequire} from 'node:module'
 
 import address from 'address'
-import webpack, {type Configuration as WebpackConfiguration, type optimize} from 'webpack'
+import webpack from 'webpack'
 import type {Rule, Use} from 'webpack-chain'
 import Config from 'webpack-chain'
 import {merge} from 'webpack-merge'
@@ -18,15 +18,17 @@ import chalk from 'chalk'
 
 import type {
   AutoVal,
+  CacheGroups,
   DefaultOptions,
   Options,
-  Webpack5RecommendConfigOptions
+  SplitChunksOptions,
+  Webpack5RecommendConfigOptions,
+  WebpackConfiguration
 } from './interface/Webpack5RecommendConfigOptions'
 import {getCertificate} from './certificate'
 import {getLocalIdent} from './getCSSModuleLocalIdent'
-
-type SplitChunksOptions = NonNullable<ConstructorParameters<typeof optimize.SplitChunksPlugin>[0]>
-type CacheGroups = SplitChunksOptions['cacheGroups']
+import DefaultValue from './DefaultValue'
+import defaultValue, {type DefaultValueClassOptions} from './DefaultValue'
 
 export class Webpack5RecommendConfig {
   public mode: 'development' | 'production'
@@ -35,8 +37,9 @@ export class Webpack5RecommendConfig {
   public isDevelopment: boolean
   public isStartSever: boolean
   public hasBabelConfig: boolean
-  public options: Options
+  public options: Readonly<Options>
 
+  private _isDefault: (key: string) => boolean
   private _webpack = webpack
   private _config = new Config()
   private _dependencies: string[] = []
@@ -86,52 +89,6 @@ export class Webpack5RecommendConfig {
   ) {
     const cwd = process.cwd()
     const isTsProject = fs.existsSync(path.resolve(cwd, 'tsconfig.json'))
-    const defaultOptions: DefaultOptions = {
-      cwd: cwd,
-      srcPath: path.resolve(cwd, 'src'),
-      distPath: path.resolve(cwd, 'dist'),
-      staticFolderPath: path.resolve(cwd, 'public'),
-      packageJSONFilePath: path.resolve(cwd, 'package.json'),
-
-      isTsProject: isTsProject,
-      isEntryJSX: '^auto',
-      scriptExt: null,
-      entryDefaultName: 'main',
-      entryDefaultFileName: null,
-
-      enableSSL: false,
-      enableDevtool: '!auto',
-      enableFriendly: true,
-      enableProfile: false,
-      enableMock: false,
-      enableThread: false,
-      enableHash: true,
-      enableSplitChunk: 'auto',
-      enableBabel: '^auto',
-      enablePostcss: '^auto',
-      enableMinimize: 'auto',
-      enableCssModule: true,
-      enableResolveCss: '^auto',
-      enableResolveAsset: true,
-
-      emitHtml: true,
-      emitCss: false,
-      emitPublic: true,
-
-      title: null,
-      publicPath: '/',
-      isNodeEnv: false,
-      libraryName: false,
-      externals: [],
-      define: {},
-      skipCheckBabel: false,
-      open: false,
-      port: 8080,
-      proxyHostAndPort: null,
-
-      configureWebpack: {},
-      chainWebpack: (config) => config
-    }
 
     this.mode = mode || 'development'
     this.isProduction = this.mode === 'production'
@@ -139,28 +96,70 @@ export class Webpack5RecommendConfig {
     this.isStartSever = !!isStartSever
     this.hasBabelConfig = fs.existsSync(path.resolve(cwd, 'babel.config.js'))
 
-    // 合并解析参数阶段
-    if (Array.isArray(options)) {
-      if (options.length === 1) {
-        Object.assign(defaultOptions, options[0])
-      } else if (options.length === 2) {
-        if (this.isProduction) {
-          Object.assign(defaultOptions, options[0]) // 生产配置
-        } else {
-          Object.assign(defaultOptions, options[1]) // 开发配置
+    // 解析用户传参-->默认传参
+    let defaultOptions = this._parseUserOptionsStage(options, {
+      cwd: DefaultValue(() => cwd),
+      srcPath: DefaultValue(() => path.resolve(cwd, 'src')),
+      distPath: DefaultValue(() => path.resolve(cwd, 'dist')),
+      staticFolderPath: DefaultValue(() => path.resolve(cwd, 'public')),
+      packageJSONFilePath: DefaultValue(() => path.resolve(cwd, 'package.json')),
+
+      isTsProject: DefaultValue(() => isTsProject),
+      isEntryJSX: DefaultValue(() => '^auto'),
+      scriptExt: DefaultValue((self) => {
+        return (isTsProject ? 'ts' : 'js') + (DefaultValue.unpackProperty(self, 'isEntryJSX') ? 'x' : '')
+      }),
+      entryDefaultName: DefaultValue(() => 'main'),
+      entryDefaultFileName: DefaultValue((self) => {
+        return `${DefaultValue.unpackProperty(self, 'entryDefaultName')}.${DefaultValue.unpackProperty(
+          self,
+          'scriptExt'
+        )}`
+      }),
+
+      enableSSL: DefaultValue(() => false),
+      enableDevtool: DefaultValue(() => '!auto'),
+      enableFriendly: DefaultValue(() => true),
+      enableProfile: DefaultValue(() => false),
+      enableMock: DefaultValue(() => false),
+      enableThread: DefaultValue(() => false),
+      enableHash: DefaultValue(() => true),
+      enableSplitChunk: DefaultValue((self) => {
+        if (DefaultValue.unpackProperty(self, 'isPackLibrary')) {
+          return false
         }
-      } else if (options.length === 3) {
-        if (this.isProduction) {
-          Object.assign(defaultOptions, options[0], options[1]) // 生产配置
-        } else {
-          Object.assign(defaultOptions, options[0], options[2]) // 开发配置
-        }
-      } else {
-        throw TypeError('Incorrect number of options parameters.')
-      }
-    } else if (typeof options === 'object') {
-      Object.assign(defaultOptions, options)
-    }
+        return 'auto'
+      }),
+      enableBabel: DefaultValue(() => '^auto'),
+      enablePostcss: DefaultValue(() => '^auto'),
+      enableMinimize: DefaultValue(() => 'auto'),
+      enableCssModule: DefaultValue(() => true),
+      enableResolveCss: DefaultValue(() => '^auto'),
+      enableResolveAsset: DefaultValue(() => true),
+
+      emitHtml: DefaultValue((self) => {
+        return !(DefaultValue.unpackProperty(self, 'isPackLibrary') || DefaultValue.unpackProperty(self, 'isNodeEnv'))
+      }),
+      emitCss: DefaultValue(() => false),
+      emitPublic: DefaultValue(() => true),
+
+      title: DefaultValue((self) => {
+        return require(DefaultValue.unpackProperty(self, 'packageJSONFilePath'))['name'] || 'Webpack App'
+      }),
+      publicPath: DefaultValue(() => '/'),
+      isNodeEnv: DefaultValue(() => false),
+      isPackLibrary: DefaultValue((self) => DefaultValue.unpackProperty(self, 'libraryName') !== false),
+      libraryName: DefaultValue(() => false),
+      externals: DefaultValue(() => []),
+      define: DefaultValue(() => ({})),
+      skipCheckBabel: DefaultValue(() => false),
+      open: DefaultValue(() => false),
+      port: DefaultValue(() => 8080),
+      proxyHostAndPort: DefaultValue(() => null),
+
+      configureWebpack: DefaultValue(() => ({})),
+      chainWebpack: DefaultValue(() => (config) => config)
+    })
 
     // 获取包加载器和依赖相关
     const packageJSON: object = require(defaultOptions.packageJSONFilePath)
@@ -171,42 +170,94 @@ export class Webpack5RecommendConfig {
     })
     this._require = createRequire(defaultOptions.packageJSONFilePath)
 
-    // 解析阶段
-    defaultOptions.isEntryJSX = this.autoVal(defaultOptions.isEntryJSX, ['react'])
-    const {isEntryJSX} = defaultOptions
-    defaultOptions.scriptExt = defaultOptions.scriptExt || (isTsProject ? 'ts' : 'js') + (isEntryJSX ? 'x' : '')
-    let {entryDefaultName, scriptExt} = defaultOptions
-    defaultOptions.entryDefaultFileName = defaultOptions.entryDefaultFileName || `${entryDefaultName}.${scriptExt}`
-
-    // 初始化AutoValue类型参数
-    defaultOptions.enableDevtool = this.autoVal(defaultOptions.enableDevtool)
-    defaultOptions.enableFriendly = this.autoVal(defaultOptions.enableFriendly)
-    defaultOptions.enableProfile = this.autoVal(defaultOptions.enableProfile)
-    defaultOptions.enableMock = this.autoVal(defaultOptions.enableMock)
-    defaultOptions.enableThread = this.autoVal(defaultOptions.enableThread, ['thread-loader'])
-    defaultOptions.enableHash = this.autoVal(defaultOptions.enableHash)
-    defaultOptions.enableSplitChunk = this.autoVal(defaultOptions.enableSplitChunk)
-    defaultOptions.enableBabel = this.autoVal(defaultOptions.enableBabel, ['babel-loader', '@babel/core'])
-    defaultOptions.enablePostcss = this.autoVal(defaultOptions.enablePostcss, [
-      'postcss-loader',
-      'css-loader',
-      'style-loader'
-    ])
-    defaultOptions.enableMinimize = this.autoVal(defaultOptions.enableMinimize)
-    defaultOptions.enableCssModule = this.autoVal(defaultOptions.enableCssModule)
-    defaultOptions.enableResolveCss = this.autoVal(defaultOptions.enableResolveCss, ['css-loader', 'style-loader'])
-    defaultOptions.enableResolveAsset = this.autoVal(defaultOptions.enableResolveAsset)
-
-    defaultOptions.emitCss = this.autoVal(defaultOptions.emitCss)
-
-    defaultOptions.title = defaultOptions.title || packageJSON['name'] || 'Webpack App'
-    if (defaultOptions.libraryName === true) {
-      defaultOptions.libraryName = this.camelCase(packageJSON['name']) || 'library'
+    // 解析默认传参
+    this._isDefault = (key) => DefaultValue.is(defaultValue, key)
+    this.options = this._parseDefaultOptionsStage(isTsProject, packageJSON, defaultOptions)
+    if (this.options.enableSSL) {
+      this.devServerProtocol = 'https'
     }
 
-    this.options = defaultOptions as Options
-
     // 检测配置合理性阶段
+    this._checkStage(isTsProject)
+  }
+
+  /**
+   * 用户输入参数解析阶段
+   * @param userOptions
+   * @param defaultValueClassOptions
+   */
+  _parseUserOptionsStage(
+    userOptions: Webpack5RecommendConfigOptions,
+    defaultValueClassOptions: DefaultValueClassOptions<DefaultOptions>
+  ): DefaultOptions {
+    if (Array.isArray(userOptions)) {
+      if (userOptions.length === 1) {
+        return this._assignStage(defaultValueClassOptions, userOptions[0])
+      } else if (userOptions.length === 2) {
+        if (this.isProduction) {
+          return this._assignStage(defaultValueClassOptions, userOptions[0]) // 生产配置
+        } else {
+          return this._assignStage(defaultValueClassOptions, userOptions[1]) // 开发配置
+        }
+      } else if (userOptions.length === 3) {
+        if (this.isProduction) {
+          return this._assignStage(defaultValueClassOptions, userOptions[0], userOptions[1]) // 生产配置
+        } else {
+          return this._assignStage(defaultValueClassOptions, userOptions[0], userOptions[2]) // 开发配置
+        }
+      } else {
+        throw TypeError('Incorrect number of options parameters.')
+      }
+    } else if (typeof userOptions === 'object') {
+      return this._assignStage(defaultValueClassOptions, userOptions)
+    }
+
+    throw TypeError('Incorrect number of options parameters.')
+  }
+
+  /**
+   * 默认参数解析阶段
+   * @param isTsProject
+   * @param packageJSON
+   * @param defaultOptions - 与用户属性合并过的参数配置
+   */
+  _parseDefaultOptionsStage(
+    isTsProject: boolean,
+    packageJSON: object,
+    defaultOptions: DefaultOptions
+  ): Readonly<Options> {
+    let options: Options = DefaultValue.unpack(defaultOptions)
+
+    if (options.libraryName === true) {
+      options.libraryName = this.camelCase(packageJSON['name']) || 'library'
+    }
+
+    return Object.freeze(options)
+  }
+
+  _assignStage(target, ...sources): DefaultOptions {
+    let defaultOptions = Object.assign(target, ...sources)
+    this.transformAutoVal(defaultOptions, [
+      {key: 'isEntryJSX', dep: ['react']},
+      {key: 'enableDevtool', dep: []},
+      {key: 'enableFriendly', dep: []},
+      {key: 'enableProfile', dep: []},
+      {key: 'enableMock', dep: []},
+      {key: 'enableThread', dep: ['thread-loader']},
+      {key: 'enableHash', dep: []},
+      {key: 'enableSplitChunk', dep: []},
+      {key: 'enableBabel', dep: ['babel-loader', '@babel/core']},
+      {key: 'enablePostcss', dep: ['postcss-loader', 'css-loader', 'style-loader']},
+      {key: 'enableMinimize', dep: []},
+      {key: 'enableCssModule', dep: []},
+      {key: 'enableResolveCss', dep: ['css-loader', 'style-loader']},
+      {key: 'enableResolveAsset', dep: []},
+      {key: 'emitCss', dep: []}
+    ])
+    return DefaultValue.wrap<DefaultOptions>(defaultOptions)
+  }
+
+  _checkStage(isTsProject: boolean) {
     if (this.isProduction) {
       // 生产环境检查是否开启babel-loader
       this.checkEnableBabel('Please enable Babel in the production environment.')
@@ -218,9 +269,6 @@ export class Webpack5RecommendConfig {
     if (this.options.enableBabel) {
       // 启用babel时检查是否需要完成react项目编译
       this.checkBabelCompileReact()
-    }
-    if (this.options.enableSSL) {
-      this.devServerProtocol = 'https'
     }
   }
 
@@ -1122,6 +1170,18 @@ export class Webpack5RecommendConfig {
     if (this.isInclude('react') && !this.isInclude('@babel/preset-react')) {
       throw TypeError('Please add and configure @babel/preset-react in Babel to compile the react project.')
     }
+  }
+
+  transformAutoVal(target: any, config: {key: string; dep: string[]}[]) {
+    for (let item of config) {
+      if (DefaultValue.is(target[item.key])) {
+        let val = this.autoVal(DefaultValue.unpackProperty(target, item.key), item.dep)
+        target[item.key].reset(() => val)
+      } else {
+        target[item.key] = this.autoVal(target[item.key], item.dep)
+      }
+    }
+    return target
   }
 
   autoVal(value?: AutoVal, dependencies: string[] = []) {

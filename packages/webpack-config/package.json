@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "6.5.1",
+  "version": "6.5.2",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

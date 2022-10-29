@@ -30,8 +30,7 @@ export interface DefaultOptions {
   cwd: string // 当前运行webpack所在位置
   srcPath: string // 源码目录文件位置
   distPath: string // 输出文件位置
-  staticFolderPath: string // package.json文件目录，绝对路径
-  packageJSONFilePath: string // 静态文件public目录
+  staticFolderPath: string // 静态文件public目录
 
   isTsProject: boolean // 是否为TS项目
   isEntryJSX: AutoVal // 定义入口文件是否是JSX或者TSX

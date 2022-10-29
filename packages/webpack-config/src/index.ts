@@ -89,12 +89,20 @@ export class Webpack5RecommendConfig {
   ) {
     const cwd = process.cwd()
     const isTsProject = fs.existsSync(path.resolve(cwd, 'tsconfig.json'))
+    let packageJSONFilePath = path.resolve(cwd, 'package.json')
+    let packageJSON: object = require(packageJSONFilePath)
 
     this.mode = mode || 'development'
     this.isProduction = this.mode === 'production'
     this.isDevelopment = !this.isProduction
     this.isStartSever = !!isStartSever
     this.hasBabelConfig = fs.existsSync(path.resolve(cwd, 'babel.config.js'))
+    this._dependencies = Object.keys({
+      // 项目依赖库数组，用于判定包含什么框架
+      ...packageJSON['devDependencies'],
+      ...packageJSON['dependencies']
+    })
+    this._require = createRequire(packageJSONFilePath)
 
     // 解析用户传参-->默认传参
     let defaultOptions = this._parseUserOptionsStage(options, {
@@ -102,7 +110,6 @@ export class Webpack5RecommendConfig {
       srcPath: DefaultValue(() => path.resolve(cwd, 'src')),
       distPath: DefaultValue(() => path.resolve(cwd, 'dist')),
       staticFolderPath: DefaultValue(() => path.resolve(cwd, 'public')),
-      packageJSONFilePath: DefaultValue(() => path.resolve(cwd, 'package.json')),
 
       isTsProject: DefaultValue(() => isTsProject),
       isEntryJSX: DefaultValue(() => '^auto'),
@@ -123,7 +130,7 @@ export class Webpack5RecommendConfig {
       enableProfile: DefaultValue(() => false),
       enableMock: DefaultValue(() => false),
       enableThread: DefaultValue(() => false),
-      enableHash: DefaultValue(() => true),
+      enableHash: DefaultValue(() => true), // TODO: 针对库函数调整策略
       enableSplitChunk: DefaultValue((self) => {
         if (DefaultValue.unpackProperty(self, 'isPackLibrary')) {
           return false
@@ -143,9 +150,7 @@ export class Webpack5RecommendConfig {
       emitCss: DefaultValue(() => false),
       emitPublic: DefaultValue(() => true),
 
-      title: DefaultValue((self) => {
-        return require(DefaultValue.unpackProperty(self, 'packageJSONFilePath'))['name'] || 'Webpack App'
-      }),
+      title: DefaultValue(() => this._dependencies['name'] || 'Webpack App'),
       publicPath: DefaultValue(() => '/'),
       isNodeEnv: DefaultValue(() => false),
       isPackLibrary: DefaultValue((self) => DefaultValue.unpackProperty(self, 'libraryName') !== false),
@@ -160,15 +165,6 @@ export class Webpack5RecommendConfig {
       configureWebpack: DefaultValue(() => ({})),
       chainWebpack: DefaultValue(() => (config) => config)
     })
-
-    // 获取包加载器和依赖相关
-    const packageJSON: object = require(defaultOptions.packageJSONFilePath)
-    this._dependencies = Object.keys({
-      // 项目依赖库数组，用于判定包含什么框架
-      ...packageJSON['devDependencies'],
-      ...packageJSON['dependencies']
-    })
-    this._require = createRequire(defaultOptions.packageJSONFilePath)
 
     // 解析默认传参
     this._isDefault = (key) => DefaultValue.is(defaultValue, key)
@@ -598,6 +594,7 @@ export class Webpack5RecommendConfig {
           appendTsSuffixTo: this.isInclude('vue') ? [/\.vue$/] : [],
           compilerOptions: {
             jsx: !enableBabel && this.isInclude('react') ? 'react-jsxdev' : 'preserve',
+            // TODO: 永远不弹出策略修正
             noEmit: true
           }
         })

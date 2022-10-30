@@ -42,7 +42,7 @@ export class Webpack5RecommendConfig {
   private _isDefault: (key: string) => boolean
   private _webpack = webpack
   private _config = new Config()
-  private _dependencies: string[] = []
+  private readonly _dependencies: string[] = []
   private readonly _require: NodeRequire
 
   /**
@@ -89,8 +89,8 @@ export class Webpack5RecommendConfig {
   ) {
     const cwd = process.cwd()
     const isTsProject = fs.existsSync(path.resolve(cwd, 'tsconfig.json'))
-    let packageJSONFilePath = path.resolve(cwd, 'package.json')
-    let packageJSON: object = require(packageJSONFilePath)
+    const packageJSONFilePath = path.resolve(cwd, 'package.json')
+    const packageJSON: object = require(packageJSONFilePath)
 
     this.mode = mode || 'development'
     this.isProduction = this.mode === 'production'
@@ -150,7 +150,7 @@ export class Webpack5RecommendConfig {
       emitCss: DefaultValue(() => false),
       emitPublic: DefaultValue(() => true),
 
-      title: DefaultValue(() => this._dependencies['name'] || 'Webpack App'),
+      title: DefaultValue(() => packageJSON['name'] || 'Webpack App'),
       publicPath: DefaultValue(() => '/'),
       isNodeEnv: DefaultValue(() => false),
       isPackLibrary: DefaultValue((self) => DefaultValue.unpackProperty(self, 'libraryName') !== false),

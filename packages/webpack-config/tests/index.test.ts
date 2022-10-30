@@ -23,6 +23,18 @@ let originalLog: any
 let originalWarn: any
 let originalError: any
 
+let commonOutputOptions = {
+  path: path.resolve(process.cwd(), 'dist'),
+  publicPath: '/',
+  compareBeforeEmit: false,
+  iife: true,
+  clean: true,
+  pathinfo: false,
+  ...hasHashFileOut
+}
+let mockModuleId = path.resolve(process.cwd(), 'package.json')
+let mockName = 'mock-name'
+
 function expectWcfCommon(config) {
   expect(config.stats).toBe('errors-only')
   expect(config.infrastructureLogging).toEqual({level: 'error'})
@@ -64,23 +76,11 @@ beforeAll(() => {
   global.console.error = jest.fn()
 })
 
-afterAll(() => {
-  global.console.log = originalLog
-  global.console.warn = originalWarn
-  global.console.error = originalError
+beforeEach(() => {
+  jest.resetModules()
 })
 
 describe('Webpack5RecommendConfig', () => {
-  let commonOutputOptions = {
-    path: path.resolve(process.cwd(), 'dist'),
-    publicPath: '/',
-    compareBeforeEmit: false,
-    iife: true,
-    clean: true,
-    pathinfo: false,
-    ...hasHashFileOut
-  }
-
   test('生产模式 - 常规', () => {
     let defaultContext = contextFactory()
     let defaultWebpackConfig = defaultContext(wcf({}))
@@ -203,7 +203,7 @@ describe('Webpack5RecommendConfig', () => {
     expectWcfCommon(defaultWebpackConfig)
   })
 
-  test('开发库 - 原始对象', () => {
+  test('开发库', () => {
     let nodeProLibraryConfig = new Webpack5RecommendConfig('production', false, {
       isNodeEnv: true,
       libraryName: true
@@ -233,4 +233,49 @@ describe('Webpack5RecommendConfig', () => {
     expect(webAppProConfig.options.emitHtml).toBeTruthy()
     expect(webAppProConfig.options.enableSplitChunk).toBeTruthy()
   })
+
+  test('依赖查询 - 无依赖', () => {
+    jest.doMock(mockModuleId, () => ({
+      name: mockName,
+      devDependencies: {},
+      dependencies: {}
+    }))
+
+    let webProLibraryConfig = new Webpack5RecommendConfig('production', false, {})
+
+    expect(webProLibraryConfig.options.title).toBe(mockName)
+    expect(webProLibraryConfig.options.enableBabel).toBeFalsy()
+
+    let webDevLibraryConfig = new Webpack5RecommendConfig('development', false, {})
+
+    expect(webDevLibraryConfig.options.title).toBe(mockName)
+    expect(webDevLibraryConfig.options.enableBabel).toBeFalsy()
+  })
+
+  test('依赖查询 - babel', () => {
+    jest.doMock(mockModuleId, () => ({
+      name: mockName,
+      devDependencies: {
+        '@babel/core': '*',
+        'babel-loader': '*'
+      },
+      dependencies: {}
+    }))
+
+    let webProLibraryConfig = new Webpack5RecommendConfig('production', false, {})
+
+    expect(webProLibraryConfig.options.title).toBe(mockName)
+    expect(webProLibraryConfig.options.enableBabel).toBeTruthy()
+
+    let webDevLibraryConfig = new Webpack5RecommendConfig('development', false, {})
+
+    expect(webDevLibraryConfig.options.title).toBe(mockName)
+    expect(webDevLibraryConfig.options.enableBabel).toBeTruthy()
+  })
+})
+
+afterAll(() => {
+  global.console.log = originalLog
+  global.console.warn = originalWarn
+  global.console.error = originalError
 })

@@ -272,6 +272,18 @@ describe('Webpack5RecommendConfig', () => {
     expect(webDevLibraryConfig.options.title).toBe(mockName)
     expect(webDevLibraryConfig.options.enableBabel).toBeTruthy()
   })
+
+  test('DefaultValue 查询', () => {
+    let webProLibraryConfig = new Webpack5RecommendConfig('production', false, {
+      enableDevtool: '!auto'
+    })
+    expect(Object.prototype.toString.call(webProLibraryConfig['_isDefault'])).toBe('[object Function]')
+
+    let isDefault = webProLibraryConfig['_isDefault']
+
+    expect(isDefault('enableSSL')).toBe(true)
+    expect(isDefault('enableDevtool')).toBe(false)
+  })
 })
 
 afterAll(() => {

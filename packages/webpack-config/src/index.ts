@@ -27,8 +27,7 @@ import type {
 } from './interface/Webpack5RecommendConfigOptions'
 import {getCertificate} from './certificate'
 import {getLocalIdent} from './getCSSModuleLocalIdent'
-import DefaultValue from './DefaultValue'
-import defaultValue, {type DefaultValueClassOptions} from './DefaultValue'
+import DefaultValue, {type DefaultValueClassOptions} from './DefaultValue'
 
 export class Webpack5RecommendConfig {
   public mode: 'development' | 'production'
@@ -167,7 +166,7 @@ export class Webpack5RecommendConfig {
     })
 
     // 解析默认传参
-    this._isDefault = (key) => DefaultValue.is(defaultValue, key)
+    this._isDefault = (key) => DefaultValue.is(defaultOptions, key)
     this.options = this._parseDefaultOptionsStage(isTsProject, packageJSON, defaultOptions)
     if (this.options.enableSSL) {
       this.devServerProtocol = 'https'

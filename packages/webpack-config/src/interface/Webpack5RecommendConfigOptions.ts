@@ -1,4 +1,4 @@
-import type {Configuration, optimize, WebpackOptionsNormalized} from 'webpack'
+import type {optimize, WebpackOptionsNormalized} from 'webpack'
 import Config from 'webpack-chain'
 
 export type LibraryName = boolean | string | string[]
@@ -21,8 +21,41 @@ export type AutoVal = 'auto' | '!auto' | '^auto' | boolean
 
 export type SplitChunksOptions = NonNullable<ConstructorParameters<typeof optimize.SplitChunksPlugin>[0]>
 export type CacheGroups = SplitChunksOptions['cacheGroups']
-export type WebpackConfiguration = Configuration & {
+export type WebpackConfiguration = {
+  amd?: WebpackOptionsNormalized['amd']
+  bail?: WebpackOptionsNormalized['bail']
+  cache?: WebpackOptionsNormalized['cache']
+  context?: WebpackOptionsNormalized['context']
+  dependencies?: WebpackOptionsNormalized['dependencies']
   devServer?: WebpackOptionsNormalized['devServer']
+  devtool?: WebpackOptionsNormalized['devtool']
+  entry?: {[index: string]: any}
+  experiments?: WebpackOptionsNormalized['experiments']
+  externals?: WebpackOptionsNormalized['externals']
+  externalsPresets?: WebpackOptionsNormalized['externalsPresets']
+  externalsType?: WebpackOptionsNormalized['externalsType']
+  ignoreWarnings?: WebpackOptionsNormalized['ignoreWarnings']
+  infrastructureLogging?: WebpackOptionsNormalized['infrastructureLogging']
+  loader?: WebpackOptionsNormalized['loader']
+  mode?: WebpackOptionsNormalized['mode']
+  module?: WebpackOptionsNormalized['module']
+  name?: WebpackOptionsNormalized['name']
+  node?: WebpackOptionsNormalized['node']
+  optimization?: WebpackOptionsNormalized['optimization']
+  output?: WebpackOptionsNormalized['output']
+  parallelism?: WebpackOptionsNormalized['parallelism']
+  performance?: WebpackOptionsNormalized['performance']
+  plugins?: WebpackOptionsNormalized['plugins']
+  profile?: WebpackOptionsNormalized['profile']
+  recordsInputPath?: WebpackOptionsNormalized['recordsInputPath']
+  recordsOutputPath?: WebpackOptionsNormalized['recordsOutputPath']
+  resolve?: WebpackOptionsNormalized['resolve']
+  resolveLoader?: WebpackOptionsNormalized['resolveLoader']
+  snapshot?: WebpackOptionsNormalized['snapshot']
+  stats?: WebpackOptionsNormalized['stats']
+  target?: WebpackOptionsNormalized['target']
+  watch?: WebpackOptionsNormalized['watch']
+  watchOptions?: WebpackOptionsNormalized['watchOptions']
 }
 
 // wcf options - 所有配置项都是智能检测环境生成默认值，无特殊要求不需要配置

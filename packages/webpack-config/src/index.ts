@@ -1217,7 +1217,7 @@ export class Webpack5RecommendConfig {
     return `${this.devServerProtocol}://${host || 'localhost'}:${port || this.options.port}/`
   }
 
-  toConfig(debug = false): WebpackConfiguration {
+  toConfig(debug = false) {
     this.options.chainWebpack(this._config, this)
     let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
     if (debug) {

@@ -198,6 +198,24 @@ module.exports = wcf({
 </html>
 ```
 
+- Injects a custom string into the body
+
+```js
+const {wcf} = require('@systemlight/webpack-config')
+const InjectBodyPlugin = require('inject-body-webpack-plugin').default
+
+module.exports = wcf({
+  port: 8000,
+  configureWebpack: {
+    plugins: [
+      new InjectBodyPlugin({
+        content: '<div id="root"></div>'
+      })
+    ]
+  }
+})
+```
+
 ## Notice!!!
 
 - If you are developing a library or a multi project repository (monorepo), please note that importing CSS has side

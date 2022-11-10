@@ -107,7 +107,6 @@
     "@types/node": "^18.7.21",
     "crlf": "^1.1.1",
     "jest": "^29.2.2",
-    "magic-string": "^0.26.4",
     "rollup": "^2.79.1",
     "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-preserve-shebang": "^1.0.1",

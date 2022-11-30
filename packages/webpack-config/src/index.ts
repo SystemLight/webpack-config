@@ -129,7 +129,7 @@ export class Webpack5RecommendConfig {
       enableProfile: DefaultValue(() => false),
       enableMock: DefaultValue(() => false),
       enableThread: DefaultValue(() => false),
-      enableHash: DefaultValue(() => true), // TODO: 针对库函数调整策略
+      enableHash: DefaultValue(() => true), // TODO: 针对目标为库函数进行策略调整
       enableSplitChunk: DefaultValue((self) => {
         if (DefaultValue.unpackProperty(self, 'isPackLibrary')) {
           return false
@@ -525,6 +525,7 @@ export class Webpack5RecommendConfig {
         .use(TerserWebpackPlugin, [{extractComments: false} as any])
     }
 
+    // FIXME: 会引起typescript弹出声明文件(.d.ts)异常
     this._config.cache({
       type: 'filesystem'
     })
@@ -593,7 +594,7 @@ export class Webpack5RecommendConfig {
           appendTsSuffixTo: this.isInclude('vue') ? [/\.vue$/] : [],
           compilerOptions: {
             jsx: !enableBabel && this.isInclude('react') ? 'react-jsxdev' : 'preserve',
-            // TODO: 永远不弹出策略修正
+            // FIXME: 永远不弹出策略修正
             noEmit: true
           }
         })

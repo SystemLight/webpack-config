@@ -1020,7 +1020,6 @@ export class Webpack5RecommendConfig {
            */
           config.options({
             importLoaders: 0,
-            sourceMap: this.isDevelopment,
             modules: {
               mode: 'local',
               getLocalIdent: getLocalIdent
@@ -1030,7 +1029,6 @@ export class Webpack5RecommendConfig {
         (config) => {
           config.options({
             importLoaders: 0,
-            sourceMap: this.isDevelopment,
             modules: {
               // 只是在标准 CSS 中额外增加了两个的伪选择器 :import 和 :export
               mode: 'icss'

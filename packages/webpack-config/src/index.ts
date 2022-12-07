@@ -64,12 +64,13 @@ export class Webpack5RecommendConfig {
    * https://juejin.cn/post/7091953479857471519
    *
    * loader加载阶段执行顺序
-   * https://juejin.cn/post/7037696103973650463
-   * https://juejin.cn/post/7036379350710616078
-   *
    * pre、normal、inline以及post执行顺序
    * Pitching 阶段: loader 上的 pitch 方法，按照 后置(post)、行内(inline)、普通(normal)、前置(pre) 的顺序调用
    * Normal 阶段: loader 上的 常规方法，按照 前置(pre)、普通(normal)、行内(inline)、后置(post) 的顺序调用
+   * inline loader 基本格式: 'style-loader!css-loader?modules!./styles.css'
+   * https://juejin.cn/post/7037696103973650463
+   * https://juejin.cn/post/7036379350710616078
+   * https://juejin.cn/post/6854573204854439944#heading-5
    *
    * inline loader前缀符
    * !前缀 将禁用所有已配置的 normal loader(普通 loader)

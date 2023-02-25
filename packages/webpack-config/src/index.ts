@@ -11,6 +11,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import CopyWebpackPlugin from 'copy-webpack-plugin'
+import DotenvWebpackPlugin from 'dotenv-webpack'
 import WebpackBar from 'webpackbar'
 import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
@@ -28,6 +29,7 @@ import type {
 import {getCertificate} from './certificate'
 import {getLocalIdent} from './getCSSModuleLocalIdent'
 import DefaultValue, {type DefaultValueClassOptions} from './DefaultValue'
+import InjectBodyWebpackPlugin from './plugin/inject-body-webpack-plugin'
 
 export class Webpack5RecommendConfig {
   public mode: 'development' | 'production'
@@ -38,9 +40,10 @@ export class Webpack5RecommendConfig {
   public hasBabelConfig: boolean
   public options: Readonly<Options>
 
-  private _isDefault: (key: string) => boolean
+  private _isDefault: (key: string) => boolean // 判断该选项是用户配置值还是默认值
   private _webpack = webpack
   private _config = new Config()
+  private readonly _isExist: (filePath: string) => boolean
   private readonly _dependencies: string[] = []
   private readonly _require: NodeRequire
 
@@ -103,6 +106,7 @@ export class Webpack5RecommendConfig {
       ...packageJSON['dependencies']
     })
     this._require = createRequire(packageJSONFilePath)
+    this._isExist = (filePath) => fs.existsSync(path.resolve(cwd, filePath))
 
     // 解析用户传参-->默认传参
     let defaultOptions = this._parseUserOptionsStage(options, {
@@ -130,7 +134,7 @@ export class Webpack5RecommendConfig {
       enableProfile: DefaultValue(() => false),
       enableMock: DefaultValue(() => false),
       enableThread: DefaultValue(() => false),
-      enableHash: DefaultValue(() => true), // TODO: 针对目标为库函数进行策略调整
+      enableHash: DefaultValue((self) => DefaultValue.unpackProperty(self, 'libraryName') === false),
       enableSplitChunk: DefaultValue((self) => {
         if (DefaultValue.unpackProperty(self, 'isPackLibrary')) {
           return false
@@ -151,6 +155,8 @@ export class Webpack5RecommendConfig {
       emitPublic: DefaultValue(() => true),
 
       title: DefaultValue(() => packageJSON['name'] || 'Webpack App'),
+      injectHtml: DefaultValue(() => ({content: '<div id="app"></div>', position: 'start'})),
+      dotenv: DefaultValue(() => ({})),
       publicPath: DefaultValue(() => '/'),
       isNodeEnv: DefaultValue(() => false),
       isPackLibrary: DefaultValue((self) => DefaultValue.unpackProperty(self, 'libraryName') !== false),
@@ -526,10 +532,10 @@ export class Webpack5RecommendConfig {
         .use(TerserWebpackPlugin, [{extractComments: false} as any])
     }
 
-    // FIXME: 会引起typescript弹出声明文件(.d.ts)异常
-    this._config.cache({
-      type: 'filesystem'
-    })
+    // 会引起typescript弹出声明文件(.d.ts)异常
+    // this._config.cache({
+    //   type: 'filesystem'
+    // })
 
     return this
   }
@@ -772,13 +778,15 @@ export class Webpack5RecommendConfig {
       emitCss,
       enableHash,
       emitHtml,
+      injectHtml,
       title,
       emitPublic,
       staticFolderPath,
       enableFriendly,
       enableProfile,
       define,
-      isTsProject
+      isTsProject,
+      dotenv
     } = this.options
 
     /**
@@ -824,8 +832,19 @@ export class Webpack5RecommendConfig {
               minifyCSS: true
             }
             : false
+          // src/index.ejs存在则会作为默认模板
         }
       ])
+
+      if (injectHtml) {
+        if (Array.isArray(injectHtml)) {
+          injectHtml.forEach((item, index) => {
+            config.plugin(`InjectBodyWebpackPlugin[${index}]`).use(InjectBodyWebpackPlugin, [item])
+          })
+        } else {
+          config.plugin('InjectBodyWebpackPlugin[0]').use(InjectBodyWebpackPlugin, [injectHtml])
+        }
+      }
     })
 
     /**
@@ -891,13 +910,45 @@ export class Webpack5RecommendConfig {
       // https://github.com/vuejs/core/tree/main/packages/vue#bundler-build-feature-flags
       define = Object.assign(
         {
-          __VUE_OPTIONS_API__: false,
+          __VUE_OPTIONS_API__: true,
           __VUE_PROD_DEVTOOLS__: this.isDevelopment
         },
         define
       )
     }
     this._config.plugin('_webpack.DefinePlugin').use(this._webpack.DefinePlugin, [define])
+
+    /**
+     * 加载.env环境变量配置文件
+     */
+    if (this._isDefault('dotenv')) {
+      let count = 0
+      if (this._isExist('.env')) {
+        this._config.plugin(`DotenvWebpackPlugin[${count++}]`).use(DotenvWebpackPlugin, [
+          {
+            ...dotenv,
+            path: '.env'
+          }
+        ])
+      }
+
+      if (this._isExist(`.env.${this.mode}`)) {
+        this._config.plugin(`DotenvWebpackPlugin[${count++}]`).use(DotenvWebpackPlugin, [
+          {
+            ...dotenv,
+            path: `.env.${this.mode}`
+          }
+        ])
+      }
+    } else {
+      if (Array.isArray(dotenv)) {
+        dotenv.forEach((options, index) => {
+          this._config.plugin(`DotenvWebpackPlugin[${index}]`).use(DotenvWebpackPlugin, [options])
+        })
+      } else {
+        this._config.plugin('DotenvWebpackPlugin[0]').use(DotenvWebpackPlugin, [dotenv])
+      }
+    }
 
     /**
      * 自动加载模块，而不必到处 import 或 require

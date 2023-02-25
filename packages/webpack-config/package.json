@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "6.5.3",
+  "version": "6.6.0",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -106,6 +106,7 @@
     "@types/mockjs": "^1.0.7",
     "@types/node": "^18.7.21",
     "crlf": "^1.1.1",
+    "dotenv-webpack": "^8.0.1",
     "jest": "^29.2.2",
     "rollup": "^2.79.1",
     "rollup-plugin-delete": "^2.0.0",

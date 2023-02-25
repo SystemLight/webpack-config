@@ -1,5 +1,6 @@
 import type {Config} from 'prettier'
 
+// https://prettier.io/docs/en/options.html
 let prettierConfig: Config = {
   printWidth: 120,
   semi: false,

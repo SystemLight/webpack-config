@@ -1,6 +1,8 @@
 import type {optimize, WebpackOptionsNormalized} from 'webpack'
 import Config from 'webpack-chain'
 
+import type {InjectBodyPluginOptions} from '@/plugin/inject-body-webpack-plugin'
+
 export type LibraryName = boolean | string | string[]
 
 export interface Dict {
@@ -9,6 +11,18 @@ export interface Dict {
 
 export type ConvertRequiredType<T, TC, TR> = {
   [P in keyof T]: T[P] extends TC ? TR : T[P]
+}
+
+export interface DotEnvOptions {
+  path?: string
+  safe?: boolean
+  allowEmptyValues?: boolean
+  systemvars?: boolean
+  silent?: boolean
+  expand?: boolean
+  defaults?: boolean
+  ignoreStub?: boolean
+  prefix?: string
 }
 
 /**
@@ -91,6 +105,8 @@ export interface DefaultOptions {
   emitPublic: boolean // 是否复制public文件
 
   title: string | null // 弹出html文件title标签内容
+  injectHtml: InjectBodyPluginOptions | InjectBodyPluginOptions[] // 注入到html中的内容项
+  dotenv: DotEnvOptions | DotEnvOptions[]
   publicPath: string // public文件路径
   isNodeEnv: boolean // 是否是node库
   isPackLibrary: boolean // 是否作为库函数打包

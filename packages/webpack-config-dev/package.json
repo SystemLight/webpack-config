@@ -13,7 +13,7 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.19.1",
-    "@systemlight/webpack-config": "workspace:^6.5.0",
+    "@systemlight/webpack-config": "workspace:^6.6.0",
     "add-asset-html-webpack-plugin": "^5.0.2",
     "babel-loader": "^8.2.5",
     "css-loader": "^6.7.1",

@@ -4,6 +4,7 @@ import {includeLib, isTsProject} from './utils'
 
 /**
  * https://eslint.org/docs/user-guide/configuring/
+ * https://eslint.org/docs/latest/rules/
  */
 
 export function getEslintConfig(

@@ -3,14 +3,14 @@
  * @returns {Object}
  */
 export function param2Obj(url: string) {
-  const search = decodeURIComponent(url.split('?')[1]).replace(/\+/g, ' ')
+  let search = decodeURIComponent(url.split('?')[1]).replace(/\+/g, ' ')
   if (!search) {
     return {}
   }
-  const obj = {}
-  const searchArr = search.split('&')
+  let obj = {}
+  let searchArr = search.split('&')
   searchArr.forEach((v) => {
-    const index = v.indexOf('=')
+    let index = v.indexOf('=')
     if (index !== -1) {
       obj[v.substring(0, index)] = v.substring(index + 1, v.length)
     }
@@ -29,7 +29,7 @@ export function deepClone(source) {
   if (!source && typeof source !== 'object') {
     throw new Error('error arguments deepClone')
   }
-  const targetObj = source.constructor === Array ? [] : {}
+  let targetObj = source.constructor === Array ? [] : {}
   Object.keys(source).forEach((keys) => {
     if (source[keys] && typeof source[keys] === 'object') {
       targetObj[keys] = deepClone(source[keys])

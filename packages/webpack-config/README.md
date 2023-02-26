@@ -135,7 +135,6 @@ module.exports = wcf({
   isNodeEnv: true,
   libraryName: 'Fuse',
   chainWebpack(config) {
-    config.delete('cache')
     config.module.rule('ts/tsx').use('ts-loader').tap((args) => {
       args['transpileOnly'] = false
       args['compilerOptions']['noEmit'] = false
@@ -202,17 +201,10 @@ module.exports = wcf({
 
 ```js
 const {wcf} = require('@systemlight/webpack-config')
-const InjectBodyPlugin = require('inject-body-webpack-plugin').default
 
 module.exports = wcf({
   port: 8000,
-  configureWebpack: {
-    plugins: [
-      new InjectBodyPlugin({
-        content: '<div id="root"></div>'
-      })
-    ]
-  }
+  injectHtml:{content:'<div id="root"></div>', position:'start'}
 })
 ```
 

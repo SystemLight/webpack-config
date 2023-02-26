@@ -40,9 +40,9 @@ export class Webpack5RecommendConfig {
   public hasBabelConfig: boolean
   public options: Readonly<Options>
 
-  private _isDefault: (key: string) => boolean // 判断该选项是用户配置值还是默认值
   private _webpack = webpack
   private _config = new Config()
+  private readonly _isDefault: (key: string) => boolean // 判断该选项是用户配置值还是默认值
   private readonly _isExist: (filePath: string) => boolean
   private readonly _dependencies: string[] = []
   private readonly _require: NodeRequire
@@ -597,7 +597,7 @@ export class Webpack5RecommendConfig {
         .options({
           // https://github.com/TypeStrong/ts-loader#happypackmode
           happyPackMode: enableThread,
-          transpileOnly: true, // 不做类型检查,建议与 fork-ts-checker-webpack-plugin 一起使用进行完整的类型检查
+          transpileOnly: true, // 不做类型检查，建议与 fork-ts-checker-webpack-plugin 一起使用进行完整的类型检查
           appendTsSuffixTo: this.isInclude('vue') ? [/\.vue$/] : [],
           compilerOptions: {
             jsx: !enableBabel && this.isInclude('react') ? 'react-jsxdev' : 'preserve',

@@ -75,10 +75,11 @@ export class Webpack5RecommendConfig {
    * https://juejin.cn/post/7036379350710616078
    * https://juejin.cn/post/6854573204854439944#heading-5
    *
-   * inline loader前缀符
+   * inline loader前缀符（https://webpack.js.org/concepts/loaders/#inline）
    * !前缀 将禁用所有已配置的 normal loader(普通 loader)
    * !!前缀 将禁用所有已配置的 loader（preLoader, loader, postLoader）
    * -!前缀 将禁用所有已配置的 preLoader 和 loader，但是不禁用 postLoaders
+   * 访问举例：import Styles from 'style-loader!css-loader?modules!./styles.css';
    *
    * hash类别
    * [fullhash]: 所有文件的哈希值，一个文件变化所有使用hash的bundle都会重新输出
@@ -720,6 +721,13 @@ export class Webpack5RecommendConfig {
     }
 
     if (enableResolveAsset) {
+      /**
+       * - asset：在导出一个 data URI 和发送一个单独的文件之间自动选择
+       * - asset/resource：发送一个单独的文件并导出 URL，之前通过使用 file-loader 实现
+       * - asset/inline：导出一个资源的 data URI，之前通过使用 url-loader 实现
+       * - asset/source：导出资源的源代码，之前通过使用 raw-loader 实现
+       */
+
       /**
        * https://webpack.js.org/guides/asset-modules/
        *

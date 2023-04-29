@@ -8,12 +8,12 @@
     "serve": "npm run dev:webpack-serve",
     "build": "npm run build:webpack",
     "preview": "webpack --mode development"
-  },
+  }, 
   "author": "SystemLight",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.19.1",
-    "@systemlight/webpack-config": "workspace:^6.6.0",
+    "@systemlight/webpack-config": "workspace:^6.7.2",
     "add-asset-html-webpack-plugin": "^5.0.2",
     "babel-loader": "^8.2.5",
     "css-loader": "^6.7.1",

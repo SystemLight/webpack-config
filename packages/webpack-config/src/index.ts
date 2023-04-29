@@ -16,6 +16,7 @@ import WebpackBar from 'webpackbar'
 import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
 import chalk from 'chalk'
+import {highlight} from 'cli-highlight'
 
 import type {
   AutoVal,
@@ -83,7 +84,7 @@ export class Webpack5RecommendConfig {
    *
    * hash类别
    * [fullhash]: 所有文件的哈希值，一个文件变化所有使用hash的bundle都会重新输出
-   * [chunkhash]: 根据不同的入口文(Entry)进行依赖文件解析，构建对应的chunk，生成对应的哈希值
+   * [chunkhash]: 根据不同的入口文件(Entry)进行依赖文件解析，构建对应的chunk，生成对应的哈希值
    * [contenthash]: 输出文件内容的 md4-hash，防止抽离的Css文件也随JS做重新输出
    */
   constructor(
@@ -528,6 +529,7 @@ export class Webpack5RecommendConfig {
 
     this._config.optimization.minimize(enableMinimize)
     if (enableMinimize) {
+      // 配置压缩不提取注释内容
       this._config.optimization
         .minimizer('TerserWebpackPlugin')
         .use(TerserWebpackPlugin, [{extractComments: false} as any])
@@ -1280,7 +1282,9 @@ export class Webpack5RecommendConfig {
     this.options.chainWebpack(this._config, this)
     let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
     if (debug) {
-      console.log('%o', emitConfig)
+      const {toString} = require('webpack-chain')
+      let output = toString(emitConfig, {verbose: true})
+      console.log(highlight(output, {language: 'js'}))
     }
     return emitConfig
   }

@@ -1,6 +1,6 @@
 {
   "name": "@systemlight/webpack-config",
-  "version": "6.6.2",
+  "version": "6.7.2",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -121,6 +121,7 @@
     "@systemlight/webpack-config-mockserver": "workspace:^6.0.1",
     "address": "^1.2.1",
     "chalk": "4.1.2",
+    "cli-highlight": "^2.1.11",
     "commander": "^9.4.0",
     "copy-webpack-plugin": "^11.0.0",
     "dotenv-webpack": "^8.0.1",

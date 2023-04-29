@@ -5,9 +5,11 @@ import * as path from 'node:path'
 
 import {program} from 'commander'
 import chalk from 'chalk'
-import highlight from 'cli-highlight'
+
+import logConfig from '../utils/logConfig'
 
 let {version} = require('../package.json')
+let webpackConfigPath = path.resolve(process.cwd(), 'webpack.config.js')
 
 program
   .name('@systemlight/webpack-config')
@@ -47,23 +49,16 @@ let inspect = program.command('inspect').description('弹出webpack.config.js配
 inspect
   .command('build', {isDefault: true})
   .option<string>('--mode <mode>', '当前模式', transformMode, 'development')
-  .action(({mode}) => printConfig(false, mode))
+  .action(({mode}) => logConfig(require(webpackConfigPath)({WEBPACK_SERVE: false}, {mode})))
 
 inspect
   .command('server')
   .option<string>('--mode <mode>', '当前模式', transformMode, 'development')
-  .action(({mode}) => printConfig(true, mode))
+  .action(({mode}) => logConfig(require(webpackConfigPath)({WEBPACK_SERVE: true}, {mode})))
 
 program.parse()
 
 function transformMode(value: string, previous: string): string {
   let m = /^(development|production)$/i.exec(value)
   return m ? m[0] : previous
-}
-
-function printConfig(isServer, mode) {
-  const {toString} = require('webpack-chain')
-  const webpackConfigFn = require(path.resolve(process.cwd(), 'webpack.config.js'))
-  let output = toString(webpackConfigFn({WEBPACK_SERVE: isServer}, {mode}), {verbose: true})
-  console.log(highlight('module.exports = ' + output, {language: 'js'}))
 }

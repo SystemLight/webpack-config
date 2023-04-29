@@ -16,7 +16,8 @@ import WebpackBar from 'webpackbar'
 import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
 import chalk from 'chalk'
-import {highlight} from 'cli-highlight'
+
+import logConfig from './utils/logConfig'
 
 import type {
   AutoVal,
@@ -1281,12 +1282,7 @@ export class Webpack5RecommendConfig {
   toConfig(debug = false) {
     this.options.chainWebpack(this._config, this)
     let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
-    if (debug) {
-      const {toString} = require('webpack-chain')
-      let output = toString(emitConfig, {verbose: true})
-      console.log(highlight(output, {language: 'js'}))
-    }
-    return emitConfig
+    return debug ? logConfig(emitConfig) : emitConfig
   }
 }
 
@@ -1302,4 +1298,8 @@ export function wcf(options?: Webpack5RecommendConfigOptions, debug = false) {
     const isStartSever = !!env['WEBPACK_SERVE']
     return new Webpack5RecommendConfig(mode, isStartSever, options).build().toConfig(debug)
   }
+}
+
+wcf.utils = {
+  logConfig
 }

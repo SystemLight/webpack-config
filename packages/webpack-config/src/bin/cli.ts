@@ -2,11 +2,13 @@
 
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import * as child_process from 'child_process'
 
 import {program} from 'commander'
 import chalk from 'chalk'
 
 import logConfig from '../utils/logConfig'
+import * as process from 'process'
 
 let {version} = require('../package.json')
 let webpackConfigPath = path.resolve(process.cwd(), 'webpack.config.js')
@@ -28,10 +30,9 @@ program
     console.log(`初始化生成 ${chalk.bgCyan.black('webpack.config.js')}`)
 
     let scripts = {
-      'build:webpack': 'webpack --mode production',
-      'dev:webpack-serve': 'webpack serve --mode development',
-      serve: 'npm run dev:webpack-serve',
-      build: 'npm run build:webpack'
+      serve: 'webpack serve --mode development',
+      build: 'webpack --mode production',
+      preview: 'wcf preview'
     }
     let packageJsonPath = path.resolve(process.cwd(), 'package.json')
     let packageJson = require(packageJsonPath)
@@ -42,6 +43,15 @@ program
     console.log(`初始化生成 ${chalk.bgCyan.black('package.json:scripts')}`)
 
     console.log(chalk.blueBright('初始化生成完毕'))
+  })
+
+program
+  .command('preview')
+  .description('预览编译项目')
+  .option('--mode <mode>', '当前WCF编译模式', 'preview')
+  .action(function ({mode}) {
+    process.env.WCF_MODE = mode
+    runNpm(['run', 'build'])
   })
 
 let inspect = program.command('inspect').description('弹出webpack.config.js配置内容')
@@ -61,4 +71,11 @@ program.parse()
 function transformMode(value: string, previous: string): string {
   let m = /^(development|production)$/i.exec(value)
   return m ? m[0] : previous
+}
+
+function runNpm(args) {
+  let npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+  child_process.spawnSync(npmCmd, args, {
+    stdio: 'inherit'
+  })
 }

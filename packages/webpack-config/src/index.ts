@@ -32,9 +32,10 @@ import {getCertificate} from './certificate'
 import {getLocalIdent} from './getCSSModuleLocalIdent'
 import DefaultValue, {type DefaultValueClassOptions} from './DefaultValue'
 import InjectBodyWebpackPlugin from './plugin/inject-body-webpack-plugin'
+import * as process from 'process'
 
 export class Webpack5RecommendConfig {
-  public mode: 'development' | 'production'
+  public mode: 'development' | 'production' | 'preview' | string
   public devServerProtocol = 'http'
   public isProduction: boolean
   public isDevelopment: boolean
@@ -100,7 +101,7 @@ export class Webpack5RecommendConfig {
 
     this.mode = mode || 'development'
     this.isProduction = this.mode === 'production'
-    this.isDevelopment = !this.isProduction
+    this.isDevelopment = !this.isProduction // 非生产模式一律按照开发模式处理
     this.isStartSever = !!isStartSever
     this.hasBabelConfig = fs.existsSync(path.resolve(cwd, 'babel.config.js'))
     this._dependencies = Object.keys({
@@ -132,7 +133,7 @@ export class Webpack5RecommendConfig {
       }),
 
       enableSSL: DefaultValue(() => false),
-      enableDevtool: DefaultValue(() => '!auto'),
+      enableDevtool: DefaultValue(() => (this.mode === 'preview' ? false : '!auto')),
       enableFriendly: DefaultValue(() => true),
       enableProfile: DefaultValue(() => false),
       enableMock: DefaultValue(() => false),
@@ -293,7 +294,7 @@ export class Webpack5RecommendConfig {
 
   buildBasic() {
     let basicConfig: WebpackConfiguration = {
-      mode: this.mode,
+      mode: this.isProduction ? 'production' : 'development',
       stats: 'errors-only',
       infrastructureLogging: {
         level: 'error'
@@ -1248,10 +1249,10 @@ export class Webpack5RecommendConfig {
     } else if (value === '!auto') {
       value = this.isDevelopment
     } else if (value === '^auto') {
-      // 无需验证依赖
+      // 无需验证依赖，当不存在依赖时返回false即可
       return this.isInclude(dependencies)
     }
-    // 启用并验证依赖
+    // 启用并验证依赖，当值不是以上类型时候，用户强行启用value验证依赖不足则抛出异常
     if (value && !this.isInclude(dependencies)) {
       throw TypeError('missing dependencies ' + dependencies)
     }
@@ -1294,7 +1295,8 @@ export class Webpack5RecommendConfig {
  */
 export function wcf(options?: Webpack5RecommendConfigOptions, debug = false) {
   return (env, argv) => {
-    const mode = argv.mode || 'development'
+    const mode = process.env.WCF_MODE || argv.mode || 'development'
+    console.log(`当前WCF编译模式为：${chalk.blueBright(mode)}`)
     const isStartSever = !!env['WEBPACK_SERVE']
     return new Webpack5RecommendConfig(mode, isStartSever, options).build().toConfig(debug)
   }

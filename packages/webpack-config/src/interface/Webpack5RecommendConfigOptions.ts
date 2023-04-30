@@ -26,9 +26,9 @@ export interface DotEnvOptions {
 }
 
 /**
- * - auto: 开发阶段为 true
- * - !auto: 生产阶段为 true
- * - ^auto: 满足依赖为 true
+ * - auto: 生产模式为 true，非生产模式为 false
+ * - !auto: 非生产模式为 true，生产模式为 false
+ * - ^auto: 依赖项已经安装的时候为 true，不同选项依赖的库不一样
  * - boolean: 指定永久为 true/false
  */
 export type AutoVal = 'auto' | '!auto' | '^auto' | boolean

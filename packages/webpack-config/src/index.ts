@@ -1122,9 +1122,32 @@ export class Webpack5RecommendConfig {
   getDefaultSplitChunks(): SplitChunksOptions {
     return {
       /**
-       * all: 所有方式引入的Module中的符合手动切割Chunk规则的Module都会被解析分离
-       * initial: 异步引入的Module中符合手动切割Chunk规则的Module不做解析分离
-       * async: 同步引入的Module中符合手动切割Chunk规则的Module不做解析分离
+       * https://github.com/webpack/webpack/blob/main/lib/optimize/SplitChunksPlugin.js
+       *
+       * 所有的配置都是为 cacheGroups 中的项设置默认值
+       * 如果重复引入不做拆分则会在不同bundle中产生重复代码打包
+       *
+       * chunks：
+       *    - all: 所有方式引入的chunk都会计算
+       *    - initial: 所有同步entry的方式引入的chunk都会进行计算
+       *    - async: 所有异步的方式引入的chunk都会进行计算
+       *
+       * name：
+       * defaultSizeTypes：用于和数字进行合并的类型标识不同文件的限制项
+       * automaticNameDelimiter：指定用于生成名称的分隔符
+       *
+       * maxInitialRequests：入口点引入方式的最大并行请求数
+       * maxAsyncRequests：异步加载时的最大并行请求数
+       * minRemainingSize：拆分后chunk剩余的大小
+       *
+       * enforceSizeThreshold：强制执行拆分的体积阈值
+       *
+       * minChunks：当一个module相对cacheGroups满足时，判断这个module是否被其它chunk所引用的次数大于等于该值
+       * minSize：生成 chunk 的最小体积（以 bytes 为单位），为压缩之前的大小
+       * maxSize：当一个 chunk 大于该值进行再次拆分
+       * maxInitialSize：
+       * maxAsyncSize：
+       *
        */
       chunks: 'all',
       cacheGroups: this.getSplitChunksGroup()
@@ -1135,15 +1158,15 @@ export class Webpack5RecommendConfig {
     // 内置定义 chunk 切割分离规则
     // 可以通过 webpack --mode development --analyze 进行代码块分析
     let cacheGroups: CacheGroups = {
-      common: {
-        name: 'common',
-        minChunks: 2,
-        priority: -20
-      },
-      vendors: {
+      defaultVendors: {
         name: 'vendors',
         test: /[\\/]node_modules[\\/]/,
         priority: -10
+      },
+      default: {
+        name: 'common',
+        minChunks: 2,
+        priority: -20
       }
     }
 

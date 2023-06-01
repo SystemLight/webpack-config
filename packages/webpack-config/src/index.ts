@@ -1140,13 +1140,17 @@ export class Webpack5RecommendConfig {
        * maxAsyncRequests：异步加载时的最大并行请求数
        * minRemainingSize：拆分后chunk剩余的大小
        *
-       * enforceSizeThreshold：强制执行拆分的体积阈值
+       * enforceSizeThreshold：强制执行拆分的体积阈值，如果超过了最大拆分体积，则忽略上述三个参数进行强制拆分
        *
        * minChunks：当一个module相对cacheGroups满足时，判断这个module是否被其它chunk所引用的次数大于等于该值
        * minSize：生成 chunk 的最小体积（以 bytes 为单位），为压缩之前的大小
        * maxSize：当一个 chunk 大于该值进行再次拆分
-       * maxInitialSize：
-       * maxAsyncSize：
+       * maxInitialSize：与maxSize相同，但是只作用于entry chunk
+       * maxAsyncSize：与maxSize相同，但是只作用于async chunk
+       *
+       * reuseExistingChunk：
+       *     - 默认false，当一个chunk中导入的module满足拆分条件时，是产生新chunk还是复用当前chunk放在其中
+       *     - async chunk如果不复用会删除空chunk，entry chunk不复用会保留一个空chunk
        *
        */
       chunks: 'all',

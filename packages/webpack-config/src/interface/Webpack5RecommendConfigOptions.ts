@@ -116,7 +116,7 @@ export interface DefaultOptions {
   skipCheckBabel: boolean // 是否强制跳过babel启用情况检测，当你真正确认自己不需要babel时，可以跳过警告
   open: boolean // 开发服务器是否直接打开浏览器
   port: number // 开发服务器端口号
-  proxyHostAndPort: [string, number] | null // 代理地址和端口号，默认转发路径为 /api
+  proxy: {[key: string]: any} // 代理配置项
 
   configureWebpack: WebpackConfiguration // webpack config
   chainWebpack: (config: Config, context: any) => void // webpack chain config

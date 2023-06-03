@@ -28,9 +28,9 @@ import type {
   Webpack5RecommendConfigOptions,
   WebpackConfiguration
 } from './interface/Webpack5RecommendConfigOptions'
-import {getCertificate} from './certificate'
-import {getLocalIdent} from './getCSSModuleLocalIdent'
-import DefaultValue, {type DefaultValueClassOptions} from './DefaultValue'
+import {getCertificate} from './utils/certificate'
+import {getLocalIdent} from './utils/getCSSModuleLocalIdent'
+import DefaultValue, {type DefaultValueClassOptions} from './utils/DefaultValue'
 import InjectBodyWebpackPlugin from './plugin/inject-body-webpack-plugin'
 import * as process from 'process'
 
@@ -170,7 +170,7 @@ export class Webpack5RecommendConfig {
       skipCheckBabel: DefaultValue(() => false),
       open: DefaultValue(() => false),
       port: DefaultValue(() => 8080),
-      proxyHostAndPort: DefaultValue(() => null),
+      proxy: DefaultValue(() => ({})),
 
       configureWebpack: DefaultValue(() => ({})),
       chainWebpack: DefaultValue(() => (config) => config)
@@ -436,7 +436,7 @@ export class Webpack5RecommendConfig {
   }
 
   buildDevServer() {
-    let {enableMock, enableSSL, proxyHostAndPort} = this.options
+    let {enableMock, enableSSL, proxy} = this.options
 
     // https://webpack.js.org/configuration/dev-server/
     let devServerOptions = {
@@ -459,16 +459,8 @@ export class Webpack5RecommendConfig {
     this._config.devServer.merge(devServerOptions)
     this._config.devServer.set('allowedHosts', 'all')
 
-    if (proxyHostAndPort) {
-      this._config.devServer.proxy({
-        // https://github.com/chimurai/http-proxy-middleware
-        '/api': {
-          target: `${this.getUrl(proxyHostAndPort[0], proxyHostAndPort[1])}api`,
-          changeOrigin: true,
-          secure: false
-        }
-      })
-    }
+    // https://github.com/chimurai/http-proxy-middleware
+    this._config.devServer.proxy(proxy)
 
     if (enableMock) {
       this._config.devServer.set('setupMiddlewares', (middlewares, devServer) => {
@@ -1086,7 +1078,7 @@ export class Webpack5RecommendConfig {
             importLoaders: 0,
             modules: {
               mode: 'local',
-              getLocalIdent: getLocalIdent
+              getLocalIdent
             }
           })
         },
@@ -1180,7 +1172,6 @@ export class Webpack5RecommendConfig {
         tailwind: {
           name: 'tailwind',
           test: /tailwind.css$/,
-          chunks: 'all',
           enforce: true,
           priority: 0
         }
@@ -1193,7 +1184,6 @@ export class Webpack5RecommendConfig {
         react: {
           name: 'react',
           test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)/,
-          chunks: 'all',
           enforce: true,
           priority: 0
         }
@@ -1206,7 +1196,6 @@ export class Webpack5RecommendConfig {
         antd: {
           name: 'antd',
           test: /[\\/]node_modules[\\/](@ant-design|antd)/,
-          chunks: 'all',
           enforce: true,
           priority: 0
         }
@@ -1219,7 +1208,6 @@ export class Webpack5RecommendConfig {
         vue: {
           name: 'vue',
           test: /[\\/]node_modules[\\/](@?vue|vue-router|vuex)/,
-          chunks: 'all',
           enforce: true,
           priority: 0
         }
@@ -1232,7 +1220,6 @@ export class Webpack5RecommendConfig {
         elementUI: {
           name: 'element-plus',
           test: /[\\/]node_modules[\\/](element-plus)/,
-          chunks: 'all',
           enforce: true,
           priority: 0
         }

@@ -4,14 +4,10 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import del from 'rollup-plugin-delete'
 import shebang from 'rollup-plugin-preserve-shebang'
+import tscAlias from 'tsc-alias'
 
 let {dependencies = {}, devDependencies = {}} = require('./package.json')
-let external = [
-  ...Object.keys(dependencies),
-  ...Object.keys(devDependencies),
-  /package.json/,
-  /node-forge/
-]
+let external = [...Object.keys(dependencies), ...Object.keys(devDependencies), /package.json/, /node-forge/]
 
 let commonPlugins = [
   nodeResolve(),
@@ -19,8 +15,18 @@ let commonPlugins = [
   typescript({
     exclude: ['tests/**/*'],
     module: 'ESNext'
-  })
+  }),
+  tscRollupAlias()
 ]
+
+function tscRollupAlias() {
+  return {
+    name: 'tscAlias',
+    async writeBundle(options) {
+      return tscAlias.replaceTscAliasPaths(options)
+    }
+  }
+}
 
 /**
  * https://rollupjs.org/guide/en/#command-line-flags
@@ -34,10 +40,7 @@ export default defineConfig([
       format: 'cjs',
       sourcemap: false
     },
-    plugins: [
-      ...commonPlugins,
-      del({targets: 'dist/*'})
-    ]
+    plugins: [...commonPlugins, del({targets: 'dist/*'})]
   },
   {
     input: 'src/bin/cli.ts',
@@ -47,9 +50,6 @@ export default defineConfig([
       format: 'cjs',
       sourcemap: false
     },
-    plugins: [
-      ...commonPlugins,
-      shebang()
-    ]
+    plugins: [...commonPlugins, shebang()]
   }
 ])

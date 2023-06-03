@@ -1,4 +1,4 @@
-import type {Dict} from './interface/Webpack5RecommendConfigOptions'
+import type {Dict} from '@/interface/Webpack5RecommendConfigOptions'
 
 export type DefaultValueClassOptions<T = any> = {
   [K in keyof T]: DefaultValueClass<T[K]>

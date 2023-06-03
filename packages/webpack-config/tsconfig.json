@@ -25,6 +25,7 @@
     "noEmit": false,
     "outDir": "dist/",
     "declaration": true,
+    "declarationDir": "dist/types/",
     "sourceMap": false,
     "removeComments": false,
     "strict": true,

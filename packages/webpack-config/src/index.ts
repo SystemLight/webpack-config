@@ -17,8 +17,6 @@ import FriendlyErrorsWebpackPlugin from '@soda/friendly-errors-webpack-plugin'
 import {mockServer} from '@systemlight/webpack-config-mockserver'
 import chalk from 'chalk'
 
-import logConfig from './utils/logConfig'
-
 import type {
   AutoVal,
   CacheGroups,
@@ -27,12 +25,12 @@ import type {
   SplitChunksOptions,
   Webpack5RecommendConfigOptions,
   WebpackConfiguration
-} from './interface/Webpack5RecommendConfigOptions'
-import {getCertificate} from './utils/certificate'
-import {getLocalIdent} from './utils/getCSSModuleLocalIdent'
-import DefaultValue, {type DefaultValueClassOptions} from './utils/DefaultValue'
-import InjectBodyWebpackPlugin from './plugin/inject-body-webpack-plugin'
-import * as process from 'process'
+} from '@/interface/Webpack5RecommendConfigOptions'
+import InjectBodyWebpackPlugin from '@/plugin/inject-body-webpack-plugin'
+import {getCertificate} from '@/utils/certificate'
+import {getLocalIdent} from '@/utils/getCSSModuleLocalIdent'
+import DefaultValue, {type DefaultValueClassOptions} from '@/utils/DefaultValue'
+import logConfig from '@/utils/logConfig'
 
 export class Webpack5RecommendConfig {
   public mode: 'development' | 'production' | 'preview' | string

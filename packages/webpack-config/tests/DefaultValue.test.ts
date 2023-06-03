@@ -1,4 +1,4 @@
-import DefaultValue, {DefaultValueMap} from '@/DefaultValue'
+import DefaultValue, {DefaultValueMap} from '@/utils/DefaultValue'
 
 describe('DefaultValue', () => {
   test('操作 DefaultValue 值', () => {

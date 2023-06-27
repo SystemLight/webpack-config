@@ -13,6 +13,8 @@ export type ConvertRequiredType<T, TC, TR> = {
   [P in keyof T]: T[P] extends TC ? TR : T[P]
 }
 
+export type ModeType = 'development' | 'production' | 'preview' | string
+
 export interface DotEnvOptions {
   path?: string
   safe?: boolean
@@ -34,7 +36,9 @@ export interface DotEnvOptions {
 export type AutoVal = 'auto' | '!auto' | '^auto' | boolean
 
 export type SplitChunksOptions = NonNullable<ConstructorParameters<typeof optimize.SplitChunksPlugin>[0]>
+
 export type CacheGroups = SplitChunksOptions['cacheGroups']
+
 export type WebpackConfiguration = {
   amd?: WebpackOptionsNormalized['amd']
   bail?: WebpackOptionsNormalized['bail']

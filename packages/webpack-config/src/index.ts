@@ -21,6 +21,7 @@ import type {
   AutoVal,
   CacheGroups,
   DefaultOptions,
+  ModeType,
   Options,
   SplitChunksOptions,
   Webpack5RecommendConfigOptions,
@@ -32,8 +33,16 @@ import {getLocalIdent} from '@/utils/getCSSModuleLocalIdent'
 import DefaultValue, {type DefaultValueClassOptions} from '@/utils/DefaultValue'
 import logConfig from '@/utils/logConfig'
 
+type BuildConfigCallback = (context: {
+  env: any
+  argv: any
+  mode: ModeType
+  isStartSever: boolean
+  create: (options?: Webpack5RecommendConfigOptions) => Webpack5RecommendConfig
+}) => WebpackConfiguration
+
 export class Webpack5RecommendConfig {
-  public mode: 'development' | 'production' | 'preview' | string
+  public mode: ModeType
   public devServerProtocol = 'http'
   public isProduction: boolean
   public isDevelopment: boolean
@@ -836,13 +845,7 @@ export class Webpack5RecommendConfig {
             viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no'
           },
           // https://github.com/terser/html-minifier-terser
-          minify: this.isProduction
-            ? {
-              removeComments: true,
-              collapseWhitespace: true,
-              minifyCSS: true
-            }
-            : false
+          minify: this.isProduction ? {removeComments: true, collapseWhitespace: true, minifyCSS: true} : false
           // src/index.ejs存在则会作为默认模板
         }
       ])
@@ -1316,11 +1319,20 @@ export class Webpack5RecommendConfig {
  * @param options - Webpack5RecommendConfigOptions
  * @param debug - 调试配置项
  */
-export function wcf(options?: Webpack5RecommendConfigOptions, debug = false) {
+export function wcf(options?: Webpack5RecommendConfigOptions | BuildConfigCallback, debug = false) {
   return (env, argv) => {
     const mode = process.env.WCF_MODE || argv.mode || 'development'
     console.log(`当前WCF编译模式为：${chalk.blueBright(mode)}`)
     const isStartSever = !!env['WEBPACK_SERVE']
+    if (typeof options === 'function') {
+      return options({
+        env,
+        argv,
+        mode,
+        isStartSever,
+        create: (buildOptions) => new Webpack5RecommendConfig(mode, isStartSever, buildOptions)
+      })
+    }
     return new Webpack5RecommendConfig(mode, isStartSever, options).build().toConfig(debug)
   }
 }

@@ -136,7 +136,7 @@ export class Webpack5RecommendConfig {
       enableProfile: DefaultValue(() => false),
       enableMock: DefaultValue(() => false),
       enableThread: DefaultValue(() => false),
-      enableHash: DefaultValue((self) => DefaultValue.unpackProperty(self, 'libraryName') === false),
+      enableHash: DefaultValue((self) => DefaultValue.unpackProperty(self, 'isPackLibrary') === false),
       enableSplitChunk: DefaultValue((self) => {
         if (DefaultValue.unpackProperty(self, 'isPackLibrary')) {
           return false
@@ -313,7 +313,16 @@ export class Webpack5RecommendConfig {
   }
 
   buildInsAndOuts() {
-    let {entryDefaultName, srcPath, entryDefaultFileName, distPath, publicPath, enableHash, libraryName} = this.options
+    let {
+      entryDefaultName,
+      srcPath,
+      entryDefaultFileName,
+      distPath,
+      publicPath,
+      enableHash,
+      libraryName,
+      isPackLibrary
+    } = this.options
 
     let insAndOutsConfig: WebpackConfiguration = {
       entry: {
@@ -335,15 +344,15 @@ export class Webpack5RecommendConfig {
         enableHash,
         (config) => {
           config.output.merge({
-            filename: '[name].bundle.[chunkhash:8].js', // 由配置拆分出来的文件
-            chunkFilename: '[name].chunk.[chunkhash:8].js', // 模块动态导入依赖拆分出的文件
+            filename: isPackLibrary ? '[name].[chunkhash:8].js' : '[name].bundle.[chunkhash:8].js', // 由配置拆分出来的文件
+            chunkFilename: isPackLibrary ? '[name].[chunkhash:8].js' : '[name].chunk.[chunkhash:8].js', // 模块动态导入依赖拆分出的文件
             assetModuleFilename: 'assets/[name][hash:8][ext]' // The same as output.filename but for Asset Modules
           })
         },
         (config) => {
           config.output.merge({
-            filename: '[name].bundle.js',
-            chunkFilename: '[name].chunk.js',
+            filename: isPackLibrary ? '[name].js' : '[name].bundle.js',
+            chunkFilename: isPackLibrary ? '[name].js' : '[name].chunk.js',
             assetModuleFilename: 'assets/[name][ext]'
           })
         }
@@ -1289,7 +1298,9 @@ export class Webpack5RecommendConfig {
   }
 
   getUrl(host?: string, port?: number) {
-    return `${this.devServerProtocol}://${host || 'localhost'}:${port || this.options.port}/`
+    return `${this.devServerProtocol}://${host || 'localhost'}:${
+      port || this.options.configureWebpack.devServer?.port || this.options.port
+    }/`
   }
 
   toConfig(debug = false) {

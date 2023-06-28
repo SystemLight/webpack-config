@@ -32,7 +32,8 @@
     "wcf": "./dist/cli.js"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "src/"
   ],
   "author": "SystemLighht",
   "license": "MIT",

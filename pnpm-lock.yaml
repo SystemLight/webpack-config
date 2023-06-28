@@ -164,7 +164,6 @@ importers:
   packages/webpack-config-dev:
     specifiers:
       '@babel/core': ^7.19.1
-      '@systemlight/webpack-config': workspace:^6.7.3
       add-asset-html-webpack-plugin: ^5.0.2
       babel-loader: ^8.2.5
       css-loader: ^6.7.1
@@ -179,7 +178,6 @@ importers:
       jquery: 3.7.0
     devDependencies:
       '@babel/core': 7.22.1
-      '@systemlight/webpack-config': link:../webpack-config
       add-asset-html-webpack-plugin: 5.0.2_dlwmbqk26tdih7oq24evfcxc7u
       babel-loader: 8.3.0_3huzhvxxervqpcyjqv3kwb6tae
       css-loader: 6.8.1_webpack@5.85.0

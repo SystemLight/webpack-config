@@ -5,13 +5,13 @@
   "scripts": {
     "serve": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "preview": "wcf preview"
+    "preview": "wcf preview",
+    "inspect": "node ..\\webpack-config\\dist\\cli.js inspect"
   },
   "author": "SystemLight",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.19.1",
-    "@systemlight/webpack-config": "workspace:^6.7.3",
     "add-asset-html-webpack-plugin": "^5.0.2",
     "babel-loader": "^8.2.5",
     "css-loader": "^6.7.1",

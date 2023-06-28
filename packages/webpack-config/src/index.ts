@@ -32,6 +32,7 @@ import {getCertificate} from '@/utils/certificate'
 import {getLocalIdent} from '@/utils/getCSSModuleLocalIdent'
 import DefaultValue, {type DefaultValueClassOptions} from '@/utils/DefaultValue'
 import logConfig from '@/utils/logConfig'
+import {contains, getModuleName, getNodeModules, matchSrcExternalModuleFactory, readDir} from '@/utils'
 
 type BuildConfigCallback = (context: {
   env: any
@@ -773,7 +774,7 @@ export class Webpack5RecommendConfig {
         .test(/\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/i)
         .set('type', 'asset')
         .set('generator', {
-          filename: enableHash ? 'media/[name].[hash:8][ext]' : 'images/[name][ext]'
+          filename: enableHash ? 'media/[name].[hash:8][ext]' : 'media/[name][ext]'
         })
 
       /**
@@ -786,7 +787,7 @@ export class Webpack5RecommendConfig {
         .test(/\.(woff|woff2|eot|ttf|otf)$/i)
         .set('type', 'asset')
         .set('generator', {
-          filename: enableHash ? 'font/[name].[hash:8][ext]' : 'images/[name][ext]'
+          filename: enableHash ? 'font/[name].[hash:8][ext]' : 'font/[name][ext]'
         })
     }
 
@@ -1338,5 +1339,10 @@ export function wcf(options?: Webpack5RecommendConfigOptions | BuildConfigCallba
 }
 
 wcf.utils = {
-  logConfig
+  logConfig,
+  contains,
+  readDir,
+  getNodeModules,
+  getModuleName,
+  matchSrcExternalModuleFactory
 }

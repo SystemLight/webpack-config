@@ -1,5 +1,5 @@
-const {wcf} = require('@systemlight/webpack-config')
+const {wcf} = require('../webpack-config')
 
-module.exports = wcf({
-
+module.exports = wcf((context) => {
+  return context.create().buildBasic().toConfig()
 })

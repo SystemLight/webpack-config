@@ -1,5 +1,16 @@
 const {wcf} = require('../webpack-config')
 
-module.exports = wcf((context) => {
-  return context.create().buildBasic().toConfig()
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(function () {
+      resolve()
+    }, ms)
+  })
+}
+
+module.exports = wcf({
+  chainWebpack: async () => {
+    await delay(2000)
+    console.log('go')
+  }
 })

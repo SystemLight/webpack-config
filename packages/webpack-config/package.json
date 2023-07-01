@@ -116,7 +116,7 @@
     "ts-jest": "^29.0.3",
     "tsc-alias": "^1.8.6",
     "typescript": "^4.8.3",
-    "webpack": "^5.74.0"
+    "webpack": "^5.88.1"
   },
   "dependencies": {
     "@soda/friendly-errors-webpack-plugin": "^1.8.1",

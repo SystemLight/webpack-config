@@ -97,11 +97,7 @@ export class Webpack5RecommendConfig {
    * [chunkhash]: 根据不同的入口文件(Entry)进行依赖文件解析，构建对应的chunk，生成对应的哈希值
    * [contenthash]: 输出文件内容的 md4-hash，防止抽离的Css文件也随JS做重新输出
    */
-  constructor(
-    mode?: 'development' | 'production',
-    isStartSever?: boolean,
-    options: Webpack5RecommendConfigOptions = {}
-  ) {
+  constructor(mode?: ModeType, isStartSever?: boolean, options: Webpack5RecommendConfigOptions = {}) {
     const cwd = process.cwd()
     const isTsProject = fs.existsSync(path.resolve(cwd, 'tsconfig.json'))
     const packageJSONFilePath = path.resolve(cwd, 'package.json')
@@ -286,21 +282,19 @@ export class Webpack5RecommendConfig {
     }
   }
 
-  build() {
+  async build() {
     // webpack5配置文档：https://webpack.js.org/configuration/
-    this.buildBasic()
-      .buildInsAndOuts()
-      .buildExternals()
-      .buildResolve()
-      .buildDevServer()
-      .buildImprove()
-      .buildRules()
-      .buildPlugins()
-
-    return this
+    await this.buildBasic()
+    await this.buildInsAndOuts()
+    await this.buildExternals()
+    await this.buildResolve()
+    await this.buildDevServer()
+    await this.buildImprove()
+    await this.buildRules()
+    await this.buildPlugins()
   }
 
-  buildBasic() {
+  async buildBasic() {
     let basicConfig: WebpackConfiguration = {
       mode: this.isProduction ? 'production' : 'development',
       stats: 'errors-only',
@@ -318,11 +312,9 @@ export class Webpack5RecommendConfig {
         config.target('web')
       }
     })
-
-    return this
   }
 
-  buildInsAndOuts() {
+  async buildInsAndOuts() {
     let {
       entryDefaultName,
       srcPath,
@@ -386,11 +378,9 @@ export class Webpack5RecommendConfig {
           }
         })
       })
-
-    return this
   }
 
-  buildExternals() {
+  async buildExternals() {
     let externalsPresets: WebpackConfiguration['externalsPresets'] = {}
     let externals: WebpackConfiguration['externals'] = {}
 
@@ -416,11 +406,9 @@ export class Webpack5RecommendConfig {
 
     this._config.set('externalsPresets', externalsPresets)
     this._config.externals(externals)
-
-    return this
   }
 
-  buildResolve() {
+  async buildResolve() {
     let {isTsProject, srcPath} = this.options
 
     let resolveOptions: WebpackConfiguration['resolve'] = {
@@ -448,26 +436,31 @@ export class Webpack5RecommendConfig {
     if (this.isInclude('vue')) {
       this._config.resolve.extensions.add('.vue')
     }
-
-    return this
   }
 
-  buildDevServer() {
+  async buildDevServer() {
     let {enableMock, enableSSL, proxy} = this.options
 
     // https://webpack.js.org/configuration/dev-server/
     let devServerOptions = {
-      historyApiFallback: true, // https://github.com/bripkens/connect-history-api-fallback
       host: '0.0.0.0',
+      port: this.options.port,
+      allowedHosts: 'all',
+      magicHtml: false,
+      historyApiFallback: true, // https://github.com/bripkens/connect-history-api-fallback
       liveReload: true,
       hot: false, // HMR（Hot Module Replacement），JS文件内需要调用accept()
       open: this.options.open ? [this.getUrl()] : false,
-      port: this.options.port,
-      magicHtml: false,
-      // https://github.com/webpack/webpack-dev-middleware
+      compress: false, // Enable gzip compression for everything served
       client: {
-        logging: 'error'
+        logging: 'error',
+        overlay: {
+          errors: true,
+          warnings: false,
+          runtimeErrors: false
+        }
       },
+      // https://github.com/webpack/webpack-dev-middleware
       devMiddleware: {
         stats: false
       }
@@ -503,11 +496,9 @@ export class Webpack5RecommendConfig {
         }
       })
     }
-
-    return this
   }
 
-  buildImprove() {
+  async buildImprove() {
     let {enableSplitChunk, enableMinimize} = this.options
 
     let performanceOptions: WebpackConfiguration['performance'] = {
@@ -545,16 +536,9 @@ export class Webpack5RecommendConfig {
         .minimizer('TerserWebpackPlugin')
         .use(TerserWebpackPlugin, [{extractComments: false} as any])
     }
-
-    // 会引起typescript弹出声明文件(.d.ts)异常
-    // this._config.cache({
-    //   type: 'filesystem'
-    // })
-
-    return this
   }
 
-  buildRules() {
+  async buildRules() {
     // https://webpack.js.org/configuration/module/#modulerules
     let {enableBabel, enableThread, isTsProject, enableResolveCss, enableResolveAsset, enableHash} = this.options
 
@@ -790,11 +774,9 @@ export class Webpack5RecommendConfig {
           filename: enableHash ? 'font/[name].[hash:8][ext]' : 'font/[name][ext]'
         })
     }
-
-    return this
   }
 
-  buildPlugins() {
+  async buildPlugins() {
     let {
       emitCss,
       enableHash,
@@ -985,8 +967,6 @@ export class Webpack5RecommendConfig {
       ignorePaths.push(/\.js$/, /\.d\.ts$/)
       this._config.plugin('_webpack.WatchIgnorePlugin').use(this._webpack.WatchIgnorePlugin, [{paths: ignorePaths}])
     }
-
-    return this
   }
 
   configDefaultBabelConfig = (obj: Use) => {
@@ -1307,8 +1287,8 @@ export class Webpack5RecommendConfig {
     }/`
   }
 
-  toConfig(debug = false) {
-    this.options.chainWebpack(this._config, this)
+  async toConfig(debug = false) {
+    await this.options.chainWebpack(this._config, this)
     let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
     return debug ? logConfig(emitConfig) : emitConfig
   }
@@ -1317,14 +1297,16 @@ export class Webpack5RecommendConfig {
 /**
  * 注意：尽量不要在options.configureWebpack中配置mode，而是在webpack命令行中使用--mode进行指定
  * 直接指定在configureWebpack中不会影响Webpack5RecommendConfig的默认行为，只会改变webpack的默认行为
- * @param options - Webpack5RecommendConfigOptions
- * @param debug - 调试配置项
+ * @param {(Webpack5RecommendConfigOptions | BuildConfigCallback)?} options - 配置选项
+ * @param {boolean?} debug - 调试配置项
  */
 export function wcf(options?: Webpack5RecommendConfigOptions | BuildConfigCallback, debug = false) {
-  return (env, argv) => {
-    const mode = process.env.WCF_MODE || argv.mode || 'development'
+  return async (env, argv) => {
+    let mode = process.env.WCF_MODE || argv.mode || 'development'
+    let isStartSever = !!env['WEBPACK_SERVE']
+
     console.log(`当前WCF编译模式为：${chalk.blueBright(mode)}`)
-    const isStartSever = !!env['WEBPACK_SERVE']
+
     if (typeof options === 'function') {
       return options({
         env,
@@ -1334,7 +1316,10 @@ export function wcf(options?: Webpack5RecommendConfigOptions | BuildConfigCallba
         create: (buildOptions) => new Webpack5RecommendConfig(mode, isStartSever, buildOptions)
       })
     }
-    return new Webpack5RecommendConfig(mode, isStartSever, options).build().toConfig(debug)
+
+    let configBuildInstance = new Webpack5RecommendConfig(mode, isStartSever, options)
+    await configBuildInstance.build()
+    return configBuildInstance.toConfig(debug)
   }
 }
 

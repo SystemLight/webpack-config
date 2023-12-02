@@ -1,12 +1,16 @@
 import * as path from 'node:path'
 
 import {wcf, Webpack5RecommendConfig} from '@/index'
+import {WebpackConfiguration} from '@/interface/Webpack5RecommendConfigOptions'
 
 let contextFactory =
   (env = {WEBPACK_SERVE: false}, argv = {mode: 'production'}) =>
-  (configCallback: ReturnType<typeof wcf>) =>
+  (configCallback: (env: any, argv: any) => WebpackConfiguration) =>
     configCallback(env, argv)
-
+let contextAsyncFactory =
+  (env = {WEBPACK_SERVE: false}, argv = {mode: 'production'}) =>
+  (configCallback: (env: any, argv: any) => Promise<WebpackConfiguration>) =>
+    configCallback(env, argv)
 let hasHashFileOut = {
   filename: '[name].bundle.[chunkhash:8].js',
   chunkFilename: '[name].chunk.[chunkhash:8].js',
@@ -17,7 +21,11 @@ let noHashFileOut = {
   chunkFilename: '[name].chunk.js',
   assetModuleFilename: 'assets/[name][ext]'
 }
-
+let libraryFileOut = {
+  filename: '[name].js',
+  chunkFilename: '[name].js',
+  assetModuleFilename: 'assets/[name][ext]'
+}
 let commonOutputOptions = {
   path: path.resolve(process.cwd(), 'dist'),
   publicPath: '/',
@@ -34,7 +42,15 @@ let originalLog: any
 let originalWarn: any
 let originalError: any
 
-function expectWcfCommon(config) {
+function delay(ms: number | undefined) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(void 0)
+    }, ms)
+  })
+}
+
+function expectWcfCommon(config: WebpackConfiguration) {
   expect(config.stats).toBe('errors-only')
   expect(config.infrastructureLogging).toEqual({level: 'error'})
   expect(config.context).toBe(process.cwd())
@@ -56,9 +72,17 @@ function expectWcfCommon(config) {
     liveReload: true,
     hot: false,
     open: false,
+    compress: false,
     port: 8080,
     magicHtml: false,
-    client: {logging: 'error'},
+    client: {
+      logging: 'error',
+      overlay: {
+        errors: true,
+        warnings: false,
+        runtimeErrors: false
+      }
+    },
     devMiddleware: {stats: false}
   })
   expect(config.optimization).toBeTruthy()
@@ -82,7 +106,7 @@ beforeEach(() => {
 describe('Webpack5RecommendConfig', () => {
   test('生产模式 - 常规', () => {
     let defaultContext = contextFactory()
-    let defaultWebpackConfig = defaultContext(wcf({}))
+    let defaultWebpackConfig = defaultContext(wcf())
 
     expect(defaultWebpackConfig.mode).toBe('production')
     expect(defaultWebpackConfig.devtool).toBe(false)
@@ -108,6 +132,58 @@ describe('Webpack5RecommendConfig', () => {
       maxEntrypointSize: 30 * 1024 * 1024
     })
     expectWcfCommon(defaultWebpackConfig)
+  })
+
+  test('生产模式 - 常规-工厂模式', () => {
+    let defaultContext = contextAsyncFactory()
+    let defaultWebpackConfig = defaultContext(
+      wcf(async (context) => {
+        expect(context.env).toEqual({WEBPACK_SERVE: false})
+        expect(context.mode).toEqual('production')
+        let w = context.create({})
+        expect(w instanceof Webpack5RecommendConfig).toBe(true)
+        await delay(0)
+        return context.create({}).build().toConfig()
+      })
+    )
+
+    defaultWebpackConfig.then((resolveConfig) => {
+      expect(resolveConfig.mode).toBe('production')
+      expect(resolveConfig.devtool).toBe(false)
+      expect(resolveConfig.output).toEqual(commonOutputOptions)
+      expect(resolveConfig.performance).toEqual({
+        hints: 'warning',
+        maxAssetSize: 3 * 1024 * 1024,
+        maxEntrypointSize: 3 * 1024 * 1024
+      })
+      expectWcfCommon(resolveConfig)
+    })
+  })
+
+  test('开发模式 - 常规-工厂模式', () => {
+    let defaultContext = contextAsyncFactory({WEBPACK_SERVE: false}, {mode: 'development'})
+    let defaultWebpackConfig = defaultContext(
+      wcf(async (context) => {
+        expect(context.env).toEqual({WEBPACK_SERVE: false})
+        expect(context.mode).toEqual('development')
+        let w = context.create({})
+        expect(w instanceof Webpack5RecommendConfig).toBe(true)
+        await delay(0)
+        return context.create({}).build().toConfig()
+      })
+    )
+
+    defaultWebpackConfig.then((resolveConfig) => {
+      expect(resolveConfig.mode).toBe('development')
+      expect(resolveConfig.devtool).toBe('eval-cheap-module-source-map')
+      expect(resolveConfig.output).toEqual(commonOutputOptions)
+      expect(resolveConfig.performance).toEqual({
+        hints: 'warning',
+        maxAssetSize: 30 * 1024 * 1024,
+        maxEntrypointSize: 30 * 1024 * 1024
+      })
+      expectWcfCommon(resolveConfig)
+    })
   })
 
   test('生产模式 - 文件hash配置', () => {
@@ -145,7 +221,7 @@ describe('Webpack5RecommendConfig', () => {
     expect(defaultWebpackConfig.devtool).toBe(false)
     expect(defaultWebpackConfig.output).toEqual({
       ...commonOutputOptions,
-      ...noHashFileOut,
+      ...libraryFileOut,
       globalObject: 'this',
       library: {
         name: 'webpackConfig',
@@ -181,7 +257,7 @@ describe('Webpack5RecommendConfig', () => {
     expect(defaultWebpackConfig.devtool).toBe('eval-cheap-module-source-map')
     expect(defaultWebpackConfig.output).toEqual({
       ...commonOutputOptions,
-      ...noHashFileOut,
+      ...libraryFileOut,
       globalObject: 'this',
       library: {
         name: 'webpackConfig',
@@ -236,6 +312,7 @@ describe('Webpack5RecommendConfig', () => {
   })
 
   test('依赖查询 - 无依赖', () => {
+    // 模拟package.json模块内容
     jest.doMock(mockModuleId, () => ({
       name: mockName,
       devDependencies: {},

@@ -40,7 +40,7 @@ type BuildConfigCallback = (context: {
   mode: ModeType
   isStartSever: boolean
   create: (options?: Webpack5RecommendConfigOptions) => Webpack5RecommendConfig
-}) => WebpackConfiguration
+}) => Promise<WebpackConfiguration>
 
 export class Webpack5RecommendConfig {
   public mode: ModeType
@@ -177,7 +177,7 @@ export class Webpack5RecommendConfig {
       proxy: DefaultValue(() => ({})),
 
       configureWebpack: DefaultValue(() => ({})),
-      chainWebpack: DefaultValue(() => (config) => config)
+      chainWebpack: DefaultValue(() => (config: any) => config)
     })
 
     // 解析默认传参
@@ -245,7 +245,7 @@ export class Webpack5RecommendConfig {
     return Object.freeze(options)
   }
 
-  _assignStage(target, ...sources): DefaultOptions {
+  _assignStage(target: object, ...sources: Partial<DefaultOptions>[]): DefaultOptions {
     let defaultOptions = Object.assign(target, ...sources)
     this.transformAutoVal(defaultOptions, [
       {key: 'isEntryJSX', dep: ['react']},
@@ -282,19 +282,21 @@ export class Webpack5RecommendConfig {
     }
   }
 
-  async build() {
+  build() {
     // webpack5配置文档：https://webpack.js.org/configuration/
-    await this.buildBasic()
-    await this.buildInsAndOuts()
-    await this.buildExternals()
-    await this.buildResolve()
-    await this.buildDevServer()
-    await this.buildImprove()
-    await this.buildRules()
-    await this.buildPlugins()
+    this.buildBasic()
+    this.buildInsAndOuts()
+    this.buildExternals()
+    this.buildResolve()
+    this.buildDevServer()
+    this.buildImprove()
+    this.buildRules()
+    this.buildPlugins()
+
+    return this
   }
 
-  async buildBasic() {
+  buildBasic() {
     let basicConfig: WebpackConfiguration = {
       mode: this.isProduction ? 'production' : 'development',
       stats: 'errors-only',
@@ -314,7 +316,7 @@ export class Webpack5RecommendConfig {
     })
   }
 
-  async buildInsAndOuts() {
+  buildInsAndOuts() {
     let {
       entryDefaultName,
       srcPath,
@@ -380,7 +382,7 @@ export class Webpack5RecommendConfig {
       })
   }
 
-  async buildExternals() {
+  buildExternals() {
     let externalsPresets: WebpackConfiguration['externalsPresets'] = {}
     let externals: WebpackConfiguration['externals'] = {}
 
@@ -408,7 +410,7 @@ export class Webpack5RecommendConfig {
     this._config.externals(externals)
   }
 
-  async buildResolve() {
+  buildResolve() {
     let {isTsProject, srcPath} = this.options
 
     let resolveOptions: WebpackConfiguration['resolve'] = {
@@ -438,7 +440,7 @@ export class Webpack5RecommendConfig {
     }
   }
 
-  async buildDevServer() {
+  buildDevServer() {
     let {enableMock, enableSSL, proxy} = this.options
 
     // https://webpack.js.org/configuration/dev-server/
@@ -498,7 +500,7 @@ export class Webpack5RecommendConfig {
     }
   }
 
-  async buildImprove() {
+  buildImprove() {
     let {enableSplitChunk, enableMinimize} = this.options
 
     let performanceOptions: WebpackConfiguration['performance'] = {
@@ -538,7 +540,7 @@ export class Webpack5RecommendConfig {
     }
   }
 
-  async buildRules() {
+  buildRules() {
     // https://webpack.js.org/configuration/module/#modulerules
     let {enableBabel, enableThread, isTsProject, enableResolveCss, enableResolveAsset, enableHash} = this.options
 
@@ -776,7 +778,7 @@ export class Webpack5RecommendConfig {
     }
   }
 
-  async buildPlugins() {
+  buildPlugins() {
     let {
       emitCss,
       enableHash,
@@ -1116,7 +1118,7 @@ export class Webpack5RecommendConfig {
        *    - async: 所有异步的方式引入的chunk都会进行计算
        *
        * name：
-       * defaultSizeTypes：用于和数字进行合并的类型标识不同文件的限制项
+       * defaultSizeTypes：与不同的大小配置限制进行合并，形成一个不同类型不同限制的对象
        * automaticNameDelimiter：指定用于生成名称的分隔符
        *
        * maxInitialRequests：入口点引入方式的最大并行请求数
@@ -1236,7 +1238,13 @@ export class Webpack5RecommendConfig {
     }
   }
 
-  transformAutoVal(target: any, config: {key: string; dep: string[]}[]) {
+  transformAutoVal(
+    target: any,
+    config: {
+      key: string
+      dep: string[]
+    }[]
+  ) {
     for (let item of config) {
       if (DefaultValue.is(target[item.key])) {
         let val = this.autoVal(DefaultValue.unpackProperty(target, item.key), item.dep)
@@ -1287,9 +1295,9 @@ export class Webpack5RecommendConfig {
     }/`
   }
 
-  async toConfig(debug = false) {
-    await this.options.chainWebpack(this._config, this)
-    let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack)
+  toConfig(debug?: boolean) {
+    this.options.chainWebpack(this._config, this)
+    let emitConfig = merge(this._config.toConfig(), this.options.configureWebpack as any)
     return debug ? logConfig(emitConfig) : emitConfig
   }
 }
@@ -1300,25 +1308,43 @@ export class Webpack5RecommendConfig {
  * @param {(Webpack5RecommendConfigOptions | BuildConfigCallback)?} options - 配置选项
  * @param {boolean?} debug - 调试配置项
  */
-export function wcf(options?: Webpack5RecommendConfigOptions | BuildConfigCallback, debug = false) {
-  return async (env, argv) => {
-    let mode = process.env.WCF_MODE || argv.mode || 'development'
-    let isStartSever = !!env['WEBPACK_SERVE']
 
+export function wcf(
+  options?: Webpack5RecommendConfigOptions,
+  debug?: boolean
+): (env: any, argv: any) => WebpackConfiguration
+export function wcf(
+  options: BuildConfigCallback,
+  debug?: boolean
+): (env: any, argv: any) => Promise<WebpackConfiguration>
+export function wcf(
+  options?: Webpack5RecommendConfigOptions | BuildConfigCallback,
+  debug?: boolean
+): (env: any, argv: any) => WebpackConfiguration | Promise<WebpackConfiguration> {
+  let getArg = (env: any, argv: any) => {
+    let mode = process.env.WCF_MODE || argv.mode || 'development'
     console.log(`当前WCF编译模式为：${chalk.blueBright(mode)}`)
 
+    return {
+      mode: mode,
+      isStartSever: !!env['WEBPACK_SERVE']
+    }
+  }
+
+  return (env, argv) => {
+    let arg = getArg(env, argv)
     if (typeof options === 'function') {
       return options({
         env,
         argv,
-        mode,
-        isStartSever,
-        create: (buildOptions) => new Webpack5RecommendConfig(mode, isStartSever, buildOptions)
+        mode: arg.mode,
+        isStartSever: arg.isStartSever,
+        create: (buildOptions) => new Webpack5RecommendConfig(arg.mode, arg.isStartSever, buildOptions)
       })
     }
 
-    let configBuildInstance = new Webpack5RecommendConfig(mode, isStartSever, options)
-    await configBuildInstance.build()
+    let configBuildInstance = new Webpack5RecommendConfig(arg.mode, arg.isStartSever, options)
+    configBuildInstance.build()
     return configBuildInstance.toConfig(debug)
   }
 }

@@ -48,7 +48,7 @@ export function readDir(dirName) {
   }
 }
 
-export function contains(arr, val) {
+export function contains(arr: string | any[], val: string) {
   return arr && arr.indexOf(val) !== -1
 }
 
@@ -58,7 +58,7 @@ export function getNodeModules() {
 
 export function matchSrcExternalModuleFactory(matchContent: RegExp) {
   let nodeModules = getNodeModules()
-  return (request) => {
+  return (request: string) => {
     let moduleName = getModuleName(request, false)
     if (contains(nodeModules, moduleName)) {
       return false

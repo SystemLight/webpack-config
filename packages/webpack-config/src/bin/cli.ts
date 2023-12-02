@@ -59,12 +59,18 @@ let inspect = program.command('inspect').description('弹出webpack.config.js配
 inspect
   .command('build', {isDefault: true})
   .option<string>('--mode <mode>', '当前模式', transformMode, 'development')
-  .action(({mode}) => logConfig(require(webpackConfigPath)({WEBPACK_SERVE: false}, {mode})))
+  .action(async ({mode}) => {
+    let config = await require(webpackConfigPath)({WEBPACK_SERVE: false}, {mode})
+    logConfig(config)
+  })
 
 inspect
   .command('server')
   .option<string>('--mode <mode>', '当前模式', transformMode, 'development')
-  .action(({mode}) => logConfig(require(webpackConfigPath)({WEBPACK_SERVE: true}, {mode})))
+  .action(async ({mode}) => {
+    let config = await require(webpackConfigPath)({WEBPACK_SERVE: true}, {mode})
+    logConfig(config)
+  })
 
 program.parse()
 
@@ -73,7 +79,7 @@ function transformMode(value: string, previous: string): string {
   return m ? m[0] : previous
 }
 
-function runNpm(args) {
+function runNpm(args: any) {
   let npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
   child_process.spawnSync(npmCmd, args, {
     stdio: 'inherit'

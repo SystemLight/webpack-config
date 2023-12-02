@@ -8,9 +8,4 @@ function delay(ms) {
   })
 }
 
-module.exports = wcf({
-  chainWebpack: async () => {
-    await delay(2000)
-    console.log('go')
-  }
-})
+module.exports = wcf({})

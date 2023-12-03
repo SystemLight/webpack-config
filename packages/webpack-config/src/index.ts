@@ -475,7 +475,7 @@ export class Webpack5RecommendConfig {
     this._config.devServer.proxy(proxy)
 
     if (enableMock) {
-      this._config.devServer.set('setupMiddlewares', (middlewares, devServer) => {
+      this._config.devServer.set('setupMiddlewares', (middlewares: any, devServer: any) => {
         if (!devServer) {
           throw new Error('webpack-dev-server is not defined')
         }
@@ -531,6 +531,13 @@ export class Webpack5RecommendConfig {
       }
     }
 
+    /**
+     * optimization.providedExports 告诉webpack弄清楚哪些导出是由模块提供的，以便从…生成更高效的导出代码
+     * optimization.usedExports 告诉webpack确定每个模块使用的导出
+     * optimization.concatenateModules 告诉webpack找出模块图中的哪些部分可以安全地连接成一个单一模块
+     *
+     * optimization.moduleIds 控制模块 ID 的生成策略
+     */
     this._config.optimization.minimize(enableMinimize)
     if (enableMinimize) {
       // 配置压缩不提取注释内容
@@ -547,7 +554,7 @@ export class Webpack5RecommendConfig {
     // 解析选项统一配置
     this._config.module.set('parser', {
       javascript: {
-        // Enable magic comments support for CommonJS
+        // Enable magic comments support for CommonJS, eg: const x = require(/* webpackIgnore: true */ 'x');
         commonjsMagicComments: true
       }
     })

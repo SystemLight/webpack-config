@@ -20,6 +20,8 @@ let commonPlugins = [
 ]
 
 function tscRollupAlias() {
+  // tsc 在编译代码时不会去把路径别名替换成对应的相对路径，使用 tsconfig-paths | tsc-alias 解决这个问题
+  // https://github.com/microsoft/TypeScript/issues/10866
   return {
     name: 'tscAlias',
     async writeBundle(options) {

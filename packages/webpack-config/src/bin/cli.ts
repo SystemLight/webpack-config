@@ -50,6 +50,7 @@ program
   .description('预览编译项目')
   .option('--mode <mode>', '当前WCF编译模式', 'preview')
   .action(function ({mode}) {
+    // webpack --mode 只支持有效的production development，该选项扩展了这个操作
     process.env.WCF_MODE = mode
     runNpm(['run', 'build'])
   })

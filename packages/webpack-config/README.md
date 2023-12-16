@@ -216,6 +216,20 @@ module.exports = wcf({
 })
 ```
 
+- Exclude file compilation
+
+```js
+config.module
+      .rule('css')
+      .exclude
+      .add(/[\\/]demo[\\/]foo.css$/)
+
+config.module
+  .rule('ts/tsx')
+  .exclude
+  .add(/[\\/]demo[\\/]foo.ts$/)
+```
+
 ## Notice!!!
 
 - If you are developing a library or a multi project repository (monorepo), please note that importing CSS has side

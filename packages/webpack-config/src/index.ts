@@ -958,6 +958,7 @@ export class Webpack5RecommendConfig {
 
     /**
      * 自动加载模块，而不必到处 import 或 require
+     * 如果使用了eslint，需要配置 'react/react-in-jsx-scope': 'off'
      */
     let provide = {}
     if (this.isInclude('react')) {

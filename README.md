@@ -91,3 +91,14 @@
 - webpack(webpack.config.js)
   - file-loader
   - @svgr/webpack
+
+## Issue
+
+### 初始化项目？
+
+- pnpm install -r
+
+### 全局和局部安装包？
+
+- pnpm install typescript -D -W
+- pnpm install vue -r --filter @systemlight/webpack-config

@@ -1298,9 +1298,14 @@ export class Webpack5RecommendConfig {
   }
 
   getUrl(host?: string, port?: number) {
-    return `${this.devServerProtocol}://${host || 'localhost'}:${
-      port || this.options.configureWebpack.devServer?.port || this.options.port
-    }/`
+    let devServer = this.options.configureWebpack.devServer
+    let portToUse: number | null = null
+
+    if (typeof devServer === 'object' && devServer !== null && 'port' in devServer) {
+      portToUse = devServer.port
+    }
+
+    return `${this.devServerProtocol}://${host || 'localhost'}:${port || portToUse || this.options.port}/`
   }
 
   toConfig(debug?: boolean) {

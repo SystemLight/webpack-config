@@ -60,7 +60,7 @@ export type WebpackConfiguration = {
   name?: WebpackOptionsNormalized['name']
   node?: WebpackOptionsNormalized['node']
   optimization?: WebpackOptionsNormalized['optimization']
-  output?: WebpackOptionsNormalized['output']
+  output?: Partial<WebpackOptionsNormalized['output']>
   parallelism?: WebpackOptionsNormalized['parallelism']
   performance?: WebpackOptionsNormalized['performance']
   plugins?: WebpackOptionsNormalized['plugins']

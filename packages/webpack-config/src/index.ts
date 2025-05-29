@@ -471,6 +471,20 @@ export class Webpack5RecommendConfig {
     this._config.devServer.merge(devServerOptions)
     this._config.devServer.set('allowedHosts', 'all')
 
+    // 配置启动后显示端口服务
+    // this._config.devServer.set('setupMiddlewares', (middlewares: any, devServer: any) => {
+    //   if (!devServer) {
+    //     throw new Error('webpack-dev-server is not defined')
+    //   }
+    //
+    //   console.log('\n\n\x1b[36m%s\x1b[0m', '开发服务器已启动!')
+    //   console.log('\x1b[33m%s\x1b[0m', '访问地址:')
+    //   console.log(`  - 本地: http://localhost:${devServer.options.port}`)
+    //   console.log(`  - 网络: http://${require('os').hostname()}:${devServer.options.port}\n\n`)
+    //
+    //   return middlewares
+    // })
+
     // https://github.com/chimurai/http-proxy-middleware
     this._config.devServer.proxy(proxy)
 

@@ -972,6 +972,7 @@ export class Webpack5RecommendConfig {
 
     /**
      * 自动加载模块，而不必到处 import 或 require
+     * 如果使用了eslint，需要配置 'react/react-in-jsx-scope': 'off'
      */
     let provide = {}
     if (this.isInclude('react')) {
@@ -1311,9 +1312,14 @@ export class Webpack5RecommendConfig {
   }
 
   getUrl(host?: string, port?: number) {
-    return `${this.devServerProtocol}://${host || 'localhost'}:${
-      port || this.options.configureWebpack.devServer?.port || this.options.port
-    }/`
+    let devServer = this.options.configureWebpack.devServer
+    let portToUse: number | null = null
+
+    if (typeof devServer === 'object' && devServer !== null && 'port' in devServer) {
+      portToUse = devServer.port
+    }
+
+    return `${this.devServerProtocol}://${host || 'localhost'}:${port || portToUse || this.options.port}/`
   }
 
   toConfig(debug?: boolean) {
